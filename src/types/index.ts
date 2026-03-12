@@ -1,0 +1,217 @@
+export type IdentityType = 'deaf' | 'hoh' | 'hearing_ally';
+
+export type CommunicationPreference = 
+  | 'asl' 
+  | 'see' 
+  | 'text_only' 
+  | 'lip_reading' 
+  | 'written_notes' 
+  | 'learning_asl';
+
+export type ComfortPreference = 
+  | 'one_on_one' 
+  | 'small_group' 
+  | 'big_group' 
+  | 'quiet_spaces';
+
+export type AvailabilityVibe = 'weekends' | 'after_school' | 'evenings' | 'anytime';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  photos: string[];
+  identity: IdentityType;
+  communicationPreferences: CommunicationPreference[];
+  comfortPreferences: ComfortPreference[];
+  interests: string[];
+  bio: {
+    perfectHangout?: string;
+    communicationStyle?: string;
+    lookingForFriend?: string;
+  };
+  /** Would you rather: questionId -> 'a' | 'b' */
+  wouldYouRatherAnswers?: Record<string, 'a' | 'b'>;
+  location: {
+    city: string;
+    school?: string;
+    lat?: number;
+    lng?: number;
+    radiusMiles: number;
+  };
+  availability: AvailabilityVibe[];
+  ageRange?: string;
+  safetySettings: {
+    showToHearingAllies: boolean;
+    allowGroupInvites: boolean;
+    showASLLearners: boolean;
+  };
+  onboardingComplete: boolean;
+  createdAt: string;
+}
+
+export interface DiscoverProfile extends UserProfile {
+  distance: number;
+  matchScore: number;
+}
+
+export interface FriendRequest {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}
+
+export interface Match {
+  id: string;
+  users: [string, string];
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  chatId: string;
+  senderId: string;
+  content: string;
+  type: 'text' | 'icebreaker' | 'hangout_request' | 'gif';
+  createdAt: string;
+}
+
+export interface Chat {
+  id: string;
+  participants: string[];
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  createdAt: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  city: string;
+  tags: string[];
+  rules: string[];
+  type: 'public' | 'request_to_join';
+  members: string[];
+  admins: string[];
+  pinnedPosts: GroupPost[];
+  avatar?: string;
+  createdAt: string;
+}
+
+export interface GroupPost {
+  id: string;
+  groupId: string;
+  authorId: string;
+  content: string;
+  isPinned: boolean;
+  createdAt: string;
+}
+
+export interface GroupMessage {
+  id: string;
+  groupId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  time: string;
+  tags: string[];
+  communicationSupport?: string;
+  organizerId: string;
+  rsvps: string[];
+  createdAt: string;
+}
+
+export interface Report {
+  id: string;
+  reporterId: string;
+  reportedUserId: string;
+  reason: string;
+  details: string;
+  status: 'pending' | 'reviewed' | 'resolved';
+  createdAt: string;
+}
+
+export interface BlockedUser {
+  userId: string;
+  blockedAt: string;
+}
+
+export const INTEREST_OPTIONS = [
+  'Gaming', 'Sports', 'Robotics', 'Music', 'Art', 'Dance',
+  'Coding', 'Photography', 'Cooking', 'Reading', 'Movies',
+  'Anime', 'Fashion', 'Hiking', 'Yoga', 'Volunteering',
+  'Theater', 'Travel', 'Pets', 'Science', 'Writing',
+  'Skateboarding', 'Swimming', 'Basketball', 'Soccer',
+  'Crafts', 'Board Games', 'Fitness', 'Nature', 'Astronomy'
+];
+
+export const COMMUNICATION_LABELS: Record<CommunicationPreference, string> = {
+  asl: 'ASL',
+  see: 'SEE',
+  text_only: 'Text Only',
+  lip_reading: 'Lip Reading',
+  written_notes: 'Written Notes',
+  learning_asl: 'Learning ASL',
+};
+
+export const COMMUNICATION_ICONS: Record<CommunicationPreference, string> = {
+  asl: '🤟',
+  see: '👐',
+  text_only: '💬',
+  lip_reading: '👄',
+  written_notes: '📝',
+  learning_asl: '📚',
+};
+
+export const IDENTITY_LABELS: Record<IdentityType, string> = {
+  deaf: 'Deaf',
+  hoh: 'Hard of Hearing',
+  hearing_ally: 'Hearing Ally',
+};
+
+export const COMFORT_LABELS: Record<ComfortPreference, string> = {
+  one_on_one: '1:1 Hangouts',
+  small_group: 'Small Group',
+  big_group: 'Big Group Events',
+  quiet_spaces: 'Quiet Spaces Preferred',
+};
+
+export const ICEBREAKERS = [
+  "What's your favorite way to spend a weekend?",
+  "If you could learn any skill instantly, what would it be?",
+  "What show are you binge-watching right now?",
+  "Describe your perfect hangout spot!",
+  "What's your go-to comfort food?",
+  "If you could travel anywhere, where would you go?",
+  "What's something that always makes you smile?",
+  "Do you prefer morning or night adventures?",
+  "What's a hobby you've always wanted to try?",
+  "What's the best event you've ever been to?",
+];
+
+export interface WouldYouRatherQuestion {
+  id: string;
+  question: string;
+  optionA: string;
+  optionB: string;
+}
+
+export const WOULD_YOU_RATHER_QUESTIONS: WouldYouRatherQuestion[] = [
+  { id: 'wyr1', question: 'Would you rather...', optionA: 'Go to a quiet coffee shop', optionB: 'Go to a loud concert' },
+  { id: 'wyr2', question: 'Would you rather...', optionA: 'Chat 1:1 with a new friend', optionB: 'Hang out with a big group' },
+  { id: 'wyr3', question: 'Would you rather...', optionA: 'Plan hangouts in advance', optionB: 'Spontaneously meet up' },
+  { id: 'wyr4', question: 'Would you rather...', optionA: 'Video call with captions', optionB: 'Text back and forth' },
+  { id: 'wyr5', question: 'Would you rather...', optionA: 'Explore somewhere new', optionB: 'Revisit a favorite spot' },
+];
