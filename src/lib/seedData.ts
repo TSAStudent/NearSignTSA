@@ -151,13 +151,65 @@ export const SEED_PROFILES: DiscoverProfile[] = [
     matchScore: 74,
     wouldYouRatherAnswers: { wyr1: 'b', wyr2: 'a', wyr3: 'a', wyr4: 'b', wyr5: 'b' },
   },
+  // Extra Dallas-focused seed profiles for experimentation
+  {
+    id: 'user-7',
+    name: 'Sofia Martinez',
+    email: 'sofia@example.com',
+    avatar: '',
+    photos: [],
+    identity: 'deaf',
+    communicationPreferences: ['asl', 'text_only'],
+    comfortPreferences: ['one_on_one', 'small_group'],
+    interests: ['Movies', 'Anime', 'Cooking', 'Pets'],
+    bio: {
+      perfectHangout: 'Watching a new movie with good captions then grabbing tacos after',
+      communicationStyle: 'ASL first, texting is cool too',
+      lookingForFriend: 'hang out around Dallas and try new food spots with',
+    },
+    location: { city: 'Dallas, TX', radiusMiles: 12, lat: 32.7767, lng: -96.797 },
+    availability: ['evenings', 'weekends'],
+    ageRange: '15-17',
+    safetySettings: { showToHearingAllies: false, allowGroupInvites: true, showASLLearners: true },
+    onboardingComplete: true,
+    createdAt: '2024-03-05T10:00:00Z',
+    distance: 2.3,
+    matchScore: 80,
+    wouldYouRatherAnswers: { wyr1: 'b', wyr2: 'a', wyr3: 'b', wyr4: 'b', wyr5: 'a' },
+  },
+  {
+    id: 'user-8',
+    name: 'Noah Williams',
+    email: 'noah@example.com',
+    avatar: '',
+    photos: [],
+    identity: 'hoh',
+    communicationPreferences: ['lip_reading', 'text_only'],
+    comfortPreferences: ['small_group', 'quiet_spaces'],
+    interests: ['Gaming', 'Board Games', 'Science', 'Nature'],
+    bio: {
+      perfectHangout: 'Chill game night at home or walking around White Rock Lake',
+      communicationStyle: 'Lip reading + texting, always patient',
+      lookingForFriend: 'explore Dallas and play co-op games with',
+    },
+    location: { city: 'Dallas, TX', radiusMiles: 10, lat: 32.823, lng: -96.75 },
+    availability: ['after_school', 'evenings'],
+    ageRange: '16-18',
+    safetySettings: { showToHearingAllies: true, allowGroupInvites: true, showASLLearners: true },
+    onboardingComplete: true,
+    createdAt: '2024-03-08T10:00:00Z',
+    distance: 4.1,
+    matchScore: 77,
+    wouldYouRatherAnswers: { wyr1: 'a', wyr2: 'b', wyr3: 'a', wyr4: 'b', wyr5: 'b' },
+  },
 ];
 
 export const SEED_GROUPS: Group[] = [
   {
     id: 'group-1',
     name: 'Deaf Teens DFW',
-    description: 'A community for Deaf and HoH teens in the Dallas-Fort Worth area. Share experiences, plan meetups, and make lasting friendships!',
+    description:
+      'A community for Deaf and HoH teens in the Dallas-Fort Worth area. Share experiences, plan meetups, and make lasting friendships!',
     city: 'Dallas-Fort Worth, TX',
     tags: ['Deaf Community', 'Teens', 'Social', 'DFW'],
     rules: ['Be respectful', 'ASL-friendly communication', 'No bullying', 'Keep it fun!'],
@@ -180,7 +232,8 @@ export const SEED_GROUPS: Group[] = [
   {
     id: 'group-2',
     name: 'ASL Learners + Deaf Friends',
-    description: 'A supportive space where ASL learners can practice with Deaf friends. Everyone is welcome — patience and kindness are key!',
+    description:
+      'A supportive space where ASL learners can practice with Deaf friends. Everyone is welcome — patience and kindness are key!',
     city: 'Dallas, TX',
     tags: ['ASL', 'Learning', 'Practice', 'Inclusive'],
     rules: ['Be patient with learners', 'Encourage each other', 'No judgment', 'Have fun learning'],
@@ -194,7 +247,8 @@ export const SEED_GROUPS: Group[] = [
   {
     id: 'group-3',
     name: 'Robotics + STEM',
-    description: 'For Deaf/HoH students passionate about robotics, coding, science, and tech. Share projects, ask questions, and collaborate!',
+    description:
+      'For Deaf/HoH students passionate about robotics, coding, science, and tech. Share projects, ask questions, and collaborate!',
     city: 'Fort Worth, TX',
     tags: ['STEM', 'Robotics', 'Coding', 'Science'],
     rules: ['Share your projects', 'Help each other', 'Stay on topic', 'No spam'],
@@ -211,7 +265,8 @@ export const SEED_EVENTS: Event[] = [
   {
     id: 'event-1',
     title: 'ASL Game Night',
-    description: 'Join us for a fun evening of board games and card games — all in ASL! Snacks provided. Beginners welcome.',
+    description:
+      'Join us for a fun evening of board games and card games — all in ASL! Snacks provided. Beginners welcome.',
     location: 'Dallas Community Center, Dallas TX',
     date: '2026-03-20',
     time: '6:00 PM',
@@ -224,7 +279,8 @@ export const SEED_EVENTS: Event[] = [
   {
     id: 'event-2',
     title: 'Deaf Coffee Chat',
-    description: 'Casual meet-up at a deaf-friendly cafe. Come hang out, practice ASL, or just chill with new friends!',
+    description:
+      'Casual meet-up at a deaf-friendly cafe. Come hang out, practice ASL, or just chill with new friends!',
     location: 'Quiet Beans Cafe, Fort Worth TX',
     date: '2026-03-25',
     time: '3:00 PM',
@@ -236,7 +292,8 @@ export const SEED_EVENTS: Event[] = [
   {
     id: 'event-3',
     title: 'STEM Workshop: Intro to Arduino',
-    description: 'Hands-on workshop building simple circuits with Arduino. Captioned presentations and visual instructions provided.',
+    description:
+      'Hands-on workshop building simple circuits with Arduino. Captioned presentations and visual instructions provided.',
     location: 'Plano Library MakerSpace, Plano TX',
     date: '2026-04-05',
     time: '10:00 AM',
@@ -247,3 +304,4 @@ export const SEED_EVENTS: Event[] = [
     createdAt: '2024-03-10T10:00:00Z',
   },
 ];
+
