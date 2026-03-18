@@ -1,17 +1,17 @@
 export type IdentityType = 'deaf' | 'hoh' | 'hearing_ally';
 
-export type CommunicationPreference = 
-  | 'asl' 
-  | 'see' 
-  | 'text_only' 
-  | 'lip_reading' 
-  | 'written_notes' 
+export type CommunicationPreference =
+  | 'asl'
+  | 'see'
+  | 'text_only'
+  | 'lip_reading'
+  | 'written_notes'
   | 'learning_asl';
 
-export type ComfortPreference = 
-  | 'one_on_one' 
-  | 'small_group' 
-  | 'big_group' 
+export type ComfortPreference =
+  | 'one_on_one'
+  | 'small_group'
+  | 'big_group'
   | 'quiet_spaces';
 
 export type AvailabilityVibe = 'weekends' | 'after_school' | 'evenings' | 'anytime';
