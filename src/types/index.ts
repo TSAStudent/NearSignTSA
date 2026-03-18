@@ -149,12 +149,17 @@ export interface BlockedUser {
 }
 
 export const INTEREST_OPTIONS = [
-  'Gaming', 'Sports', 'Robotics', 'Music', 'Art', 'Dance',
-  'Coding', 'Photography', 'Cooking', 'Reading', 'Movies',
-  'Anime', 'Fashion', 'Hiking', 'Yoga', 'Volunteering',
-  'Theater', 'Travel', 'Pets', 'Science', 'Writing',
-  'Skateboarding', 'Swimming', 'Soccer',
-  'Crafts', 'Board Games', 'Fitness', 'Nature', 'Astronomy'
+  // Grouped to make the Interests picker easier to scan.
+  // - Sports together (only `Sports` remains as a sports option)
+  // - Reading + Writing together
+  // - Volunteering + Hiking together
+  'Sports', 'Basketball',
+  'Gaming', 'Robotics', 'Coding', 'Science', 'Astronomy',
+  'Music', 'Art', 'Dance', 'Photography', 'Cooking', 'Movies',
+  'Anime', 'Fashion', 'Theater', 'Travel', 'Pets',
+  'Reading', 'Writing',
+  'Hiking', 'Volunteering',
+  'Yoga', 'Nature', 'Crafts', 'Board Games'
 ];
 
 export const COMMUNICATION_LABELS: Record<CommunicationPreference, string> = {
@@ -182,7 +187,7 @@ export const IDENTITY_LABELS: Record<IdentityType, string> = {
 };
 
 export const COMFORT_LABELS: Record<ComfortPreference, string> = {
-  one_on_one: '1:1 Hangouts',
+  one_on_one: 'One on One',
   small_group: 'Small Group',
   big_group: 'Big Group Events',
   quiet_spaces: 'Quiet Spaces Preferred',
