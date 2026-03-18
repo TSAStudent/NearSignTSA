@@ -135,7 +135,7 @@ export const SEED_PROFILES: DiscoverProfile[] = [
     identity: 'hoh',
     communicationPreferences: ['lip_reading', 'text_only', 'learning_asl'],
     comfortPreferences: ['big_group', 'one_on_one'],
-    interests: ['Basketball', 'Fitness', 'Movies', 'Skateboarding'],
+    interests: ['Swimming', 'Fitness', 'Movies', 'Skateboarding'],
     bio: {
       perfectHangout: 'Pickup basketball then watching movies',
       communicationStyle: 'Lip reading mostly, picking up ASL',

@@ -153,7 +153,7 @@ export const INTEREST_OPTIONS = [
   'Coding', 'Photography', 'Cooking', 'Reading', 'Movies',
   'Anime', 'Fashion', 'Hiking', 'Yoga', 'Volunteering',
   'Theater', 'Travel', 'Pets', 'Science', 'Writing',
-  'Skateboarding', 'Swimming', 'Basketball', 'Soccer',
+  'Skateboarding', 'Swimming', 'Soccer',
   'Crafts', 'Board Games', 'Fitness', 'Nature', 'Astronomy'
 ];
 
