@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,11 @@ export default function OnboardingPage() {
   const [identity, setIdentity] = useState<IdentityType | null>(null);
   const [commPrefs, setCommPrefs] = useState<CommunicationPreference[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
-  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  const [addressLat, setAddressLat] = useState<number | null>(null);
+  const [addressLng, setAddressLng] = useState<number | null>(null);
+  const addressInputRef = useRef<HTMLInputElement | null>(null);
+  const [googlePlacesReady, setGooglePlacesReady] = useState(false);
   const [school, setSchool] = useState('');
   const [radius, setRadius] = useState(15);
   const [showToAllies, setShowToAllies] = useState(true);
@@ -36,6 +40,11 @@ export default function OnboardingPage() {
   const [communicationStyle, setCommunicationStyle] = useState('');
   const [lookingForFriend, setLookingForFriend] = useState('');
   const [wouldYouRather, setWouldYouRather] = useState<Record<string, 'a' | 'b'>>({});
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  let abortController: AbortController | null = null;
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadFromStorage();
@@ -53,6 +62,93 @@ export default function OnboardingPage() {
       router.push('/discover');
     }
   }, [currentUser, router]);
+
+  // DFW metroplex center and search area (50 mile radius)
+  const DFW_CENTER = { lat: 32.766, lng: -97.064 };
+  const DFW_RADIUS_MILES = 50;
+
+  // Calculate distance between two coordinates in miles
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Nominatim autocomplete for addresses via backend API (avoids CORS issues)
+  // Restricted to DFW area
+  const fetchAddressSuggestions = async (input: string) => {
+    if (!input || input.length < 3) {
+      setAddressSuggestions([]);
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+
+    // Cancel previous request if still pending
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+
+    try {
+      const response = await fetch(
+        `/api/search-address?q=${encodeURIComponent(input)}`,
+        { signal: abortController.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAddressSuggestions(data);
+      setShowSuggestions(true);
+      setIsLoadingSuggestions(false);
+    } catch (error) {
+      if ((error as any).name !== 'AbortError') {
+        console.error('Error fetching address suggestions:', error);
+        setAddressSuggestions([]);
+        setIsLoadingSuggestions(false);
+      }
+    }
+  };
+
+  const handleAddressChange = (value: string) => {
+    setAddress(value);
+
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new debounce timer (300ms delay)
+    debounceTimerRef.current = setTimeout(() => {
+      fetchAddressSuggestions(value);
+    }, 300);
+  };
+
+  const selectAddress = (suggestion: any) => {
+    const lat = parseFloat(suggestion.lat);
+    const lng = parseFloat(suggestion.lon);
+
+    // Check if within 50-mile radius of DFW center
+    const distance = calculateDistance(DFW_CENTER.lat, DFW_CENTER.lng, lat, lng);
+
+    if (distance > DFW_RADIUS_MILES) {
+      alert(`This location is ${distance.toFixed(1)} miles from the DFW area. Please select a location within ${DFW_RADIUS_MILES} miles of Dallas-Fort Worth.`);
+      return;
+    }
+
+    setAddress(suggestion.display_name);
+    setAddressLat(lat);
+    setAddressLng(lng);
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  };
 
   // Don't show any profile-creation steps if user already has an account
   if (currentUser?.onboardingComplete) {
@@ -89,7 +185,7 @@ export default function OnboardingPage() {
       case 1: return identity !== null;
       case 2: return commPrefs.length > 0;
       case 3: return interests.length > 0;
-      case 4: return city.length > 0;
+      case 4: return address.length > 0;
       case 5: return true;
       case 6: return true;
       case 7: return true;
@@ -118,9 +214,11 @@ export default function OnboardingPage() {
       },
       wouldYouRatherAnswers: Object.keys(wouldYouRather).length > 0 ? wouldYouRather : undefined,
       location: {
-        city,
+        city: address,
         school: school || undefined,
         radiusMiles: radius,
+        lat: addressLat ?? undefined,
+        lng: addressLng ?? undefined,
       },
       availability: [] as AvailabilityVibe[],
       safetySettings: {
@@ -189,11 +287,10 @@ export default function OnboardingPage() {
               <button
                 key={option.value}
                 onClick={() => setIdentity(option.value)}
-                className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 transition-all ${
-                  identity === option.value
+                className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 transition-all ${identity === option.value
                     ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
                     : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
-                }`}
+                  }`}
               >
                 <span className="text-3xl">{option.icon}</span>
                 <div>
@@ -219,11 +316,10 @@ export default function OnboardingPage() {
                 <button
                   key={pref}
                   onClick={() => toggleComm(pref)}
-                  className={`p-4 rounded-2xl text-center transition-all ${
-                    commPrefs.includes(pref)
+                  className={`p-4 rounded-2xl text-center transition-all ${commPrefs.includes(pref)
                       ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
                       : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
-                  }`}
+                    }`}
                 >
                   <span className="text-2xl block mb-1">{COMMUNICATION_ICONS[pref]}</span>
                   <span className="text-sm font-semibold">{COMMUNICATION_LABELS[pref]}</span>
@@ -237,11 +333,10 @@ export default function OnboardingPage() {
                   <button
                     key={pref}
                     onClick={() => toggleComfort(pref)}
-                    className={`p-3 rounded-xl text-xs font-medium transition-all ${
-                      comfortPrefs.includes(pref)
+                    className={`p-3 rounded-xl text-xs font-medium transition-all ${comfortPrefs.includes(pref)
                         ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
                         : 'bg-gray-50 text-gray-600 border-2 border-transparent'
-                    }`}
+                      }`}
                   >
                     {COMFORT_LABELS[pref]}
                   </button>
@@ -263,11 +358,10 @@ export default function OnboardingPage() {
                 <button
                   key={interest}
                   onClick={() => toggleInterest(interest)}
-                  className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
-                    interests.includes(interest)
+                  className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${interests.includes(interest)
                       ? 'bg-purple-500 text-white shadow-md scale-[1.02]'
                       : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
-                  }`}
+                    }`}
                 >
                   {interest}
                 </button>
@@ -284,15 +378,36 @@ export default function OnboardingPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Your location</h2>
               <p className="text-gray-500 text-sm">Your address stays hidden — others only see distance</p>
             </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-700 block mb-2">City</label>
+            <div className="relative">
+              <label className="text-sm font-semibold text-gray-700 block mb-2">Address</label>
               <input
                 type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g., Dallas, TX"
+                ref={addressInputRef}
+                value={address}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                onFocus={() => address && setShowSuggestions(true)}
+                placeholder="Start typing an address (e.g., 1600 Amphitheatre Pkwy, Mountain View, CA)"
                 className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-white"
+                autoComplete="off"
               />
+              {isLoadingSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-4 text-center">
+                  <p className="text-sm text-gray-500">Loading suggestions...</p>
+                </div>
+              )}
+              {showSuggestions && addressSuggestions.length > 0 && !isLoadingSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                  {addressSuggestions.map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => selectAddress(suggestion)}
+                      className="w-full text-left px-4 py-3 hover:bg-purple-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    >
+                      <div className="text-sm font-medium text-gray-800">{suggestion.display_name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-700 block mb-2">School (optional)</label>
@@ -379,22 +494,20 @@ export default function OnboardingPage() {
                     <button
                       type="button"
                       onClick={() => setWouldYouRather((prev) => ({ ...prev, [q.id]: 'a' }))}
-                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
-                        wouldYouRather[q.id] === 'a'
+                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'a'
                           ? 'bg-purple-500 text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
-                      }`}
+                        }`}
                     >
                       {q.optionA}
                     </button>
                     <button
                       type="button"
                       onClick={() => setWouldYouRather((prev) => ({ ...prev, [q.id]: 'b' }))}
-                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
-                        wouldYouRather[q.id] === 'b'
+                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'b'
                           ? 'bg-purple-500 text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
-                      }`}
+                        }`}
                     >
                       {q.optionB}
                     </button>
@@ -440,14 +553,12 @@ export default function OnboardingPage() {
                 </div>
                 <button
                   onClick={() => setting.onChange(!setting.value)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${
-                    setting.value ? 'bg-purple-500' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 h-6 rounded-full transition-all relative ${setting.value ? 'bg-purple-500' : 'bg-gray-300'
+                    }`}
                 >
                   <div
-                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                      setting.value ? 'translate-x-6' : 'translate-x-0.5'
-                    }`}
+                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${setting.value ? 'translate-x-6' : 'translate-x-0.5'
+                      }`}
                   />
                 </button>
               </div>
@@ -474,9 +585,8 @@ export default function OnboardingPage() {
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                  i <= step ? 'bg-purple-500' : 'bg-gray-200'
-                }`}
+                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-purple-500' : 'bg-gray-200'
+                  }`}
               />
             ))}
           </div>
@@ -512,11 +622,10 @@ export default function OnboardingPage() {
             <button
               onClick={step === STEPS.length - 1 ? handleComplete : () => setStep(step + 1)}
               disabled={!canProceed()}
-              className={`flex-1 py-3.5 px-4 rounded-2xl font-semibold flex items-center justify-center gap-1 transition-all ${
-                canProceed()
+              className={`flex-1 py-3.5 px-4 rounded-2xl font-semibold flex items-center justify-center gap-1 transition-all ${canProceed()
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg hover:shadow-xl'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
+                }`}
             >
               {step === STEPS.length - 1 ? 'Complete' : 'Next'}
               {step < STEPS.length - 1 && <ChevronRight size={18} />}
