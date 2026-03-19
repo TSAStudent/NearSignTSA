@@ -41,11 +41,11 @@ export default function ChatListPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-white'} shadow-sm`}>
+        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
           <div className="flex items-center gap-2">
-            <MessageCircle size={20} className={highContrastMode ? 'text-yellow-400' : 'text-purple-500'} />
+            <MessageCircle size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
             <h1 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
               Messages
             </h1>

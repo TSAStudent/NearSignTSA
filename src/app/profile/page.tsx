@@ -6,23 +6,25 @@ import { signOut } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import {
   Camera, Shield, Sun, Moon, LogOut, ChevronRight,
-  Edit3, MapPin, Clock, Save
+  Edit3, MapPin, Clock, Save, Palette
 } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
 import { COMMUNICATION_ICONS, COMMUNICATION_LABELS, IDENTITY_LABELS, COMFORT_LABELS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
+import ColorWheelPicker from '@/components/ColorWheelPicker';
+import type { ThemePreference } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { currentUser, updateCurrentUser, highContrastMode, toggleHighContrast, loadFromStorage } = useStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState({
+  const [bioDraft, setBioDraft] = useState({
     perfectHangout: '',
     communicationStyle: '',
     lookingForFriend: '',
   });
-  const [wyrAnswers, setWyrAnswers] = useState<Record<string, 'a' | 'b'>>({});
+  const [wyrDraft, setWyrDraft] = useState<Record<string, 'a' | 'b'>>({});
 
   useEffect(() => {
     loadFromStorage();
@@ -33,15 +35,12 @@ export default function ProfilePage() {
       router.push('/');
       return;
     }
-    setBio({
-      perfectHangout: currentUser.bio?.perfectHangout || '',
-      communicationStyle: currentUser.bio?.communicationStyle || '',
-      lookingForFriend: currentUser.bio?.lookingForFriend || '',
-    });
-    setWyrAnswers(currentUser.wouldYouRatherAnswers ?? {});
   }, [currentUser, router]);
 
   if (!currentUser) return null;
+
+  const themePreference = currentUser.themePreference ?? 'white';
+  const primaryColor = currentUser.primaryColor ?? '#8B5CF6';
 
   const initials = currentUser.name
     .split(' ')
@@ -50,8 +49,26 @@ export default function ProfilePage() {
     .toUpperCase();
 
   const handleSaveBio = () => {
-    updateCurrentUser({ bio, wouldYouRatherAnswers: Object.keys(wyrAnswers).length > 0 ? wyrAnswers : undefined });
+    updateCurrentUser({
+      bio: bioDraft,
+      wouldYouRatherAnswers: Object.keys(wyrDraft).length > 0 ? wyrDraft : undefined,
+    });
     setIsEditing(false);
+  };
+
+  const handleToggleEdit = () => {
+    setIsEditing((prev) => {
+      const next = !prev;
+      if (next) {
+        setBioDraft({
+          perfectHangout: currentUser.bio?.perfectHangout || '',
+          communicationStyle: currentUser.bio?.communicationStyle || '',
+          lookingForFriend: currentUser.bio?.lookingForFriend || '',
+        });
+        setWyrDraft(currentUser.wouldYouRatherAnswers ?? {});
+      }
+      return next;
+    });
   };
 
   const handleSignOut = () => {
@@ -62,13 +79,18 @@ export default function ProfilePage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)]'}`}>
         {/* Header */}
-        <div className="bg-gradient-to-br from-purple-500 to-pink-500 px-6 pt-6 pb-16 relative">
+        <div
+          className="px-6 pt-6 pb-16 relative"
+          style={{
+            backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-primary-light))',
+          }}
+        >
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-bold text-white">Profile</h1>
             <button
-              onClick={() => setIsEditing(!isEditing)}
+              onClick={handleToggleEdit}
               className="p-2 rounded-xl bg-white/20 text-white hover:bg-white/30 transition-colors"
             >
               <Edit3 size={18} />
@@ -79,13 +101,21 @@ export default function ProfilePage() {
         {/* Avatar overlapping header */}
         <div className="px-6 -mt-12 mb-4 relative z-10">
           <div className={`flex items-end gap-4 ${highContrastMode ? '' : ''}`}>
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-xl border-4 border-white">
+            <div
+              className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-xl border-4 border-white"
+              style={{
+                backgroundImage: 'linear-gradient(to bottom right, var(--color-primary-light), var(--color-primary))',
+              }}
+            >
               {currentUser.avatar ? (
                 <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full rounded-2xl object-cover" />
               ) : (
                 <span className="text-2xl font-bold text-white">{initials}</span>
               )}
-              <button className="absolute bottom-0 right-0 p-1.5 bg-purple-500 rounded-full text-white shadow-lg">
+              <button
+                className="absolute bottom-0 right-0 p-1.5 rounded-full text-white shadow-lg"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+              >
                 <Camera size={12} />
               </button>
             </div>
@@ -93,7 +123,9 @@ export default function ProfilePage() {
               <h2 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                 {currentUser.name}
               </h2>
-              <span className={`text-sm font-medium ${highContrastMode ? 'text-yellow-300' : 'text-purple-600'}`}>
+              <span
+                className={`text-sm font-medium ${highContrastMode ? 'text-yellow-300' : 'text-[color:var(--color-primary)]'}`}
+              >
                 {IDENTITY_LABELS[currentUser.identity]}
               </span>
             </div>
@@ -117,7 +149,7 @@ export default function ProfilePage() {
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
                     highContrastMode
                       ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
-                      : 'bg-purple-50 text-purple-700'
+                      : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]'
                   }`}
                 >
                   {COMMUNICATION_ICONS[pref]} {COMMUNICATION_LABELS[pref]}
@@ -148,8 +180,8 @@ export default function ProfilePage() {
                       {prompt.label}
                     </label>
                     <textarea
-                      value={bio[prompt.key] || ''}
-                      onChange={(e) => setBio({ ...bio, [prompt.key]: e.target.value })}
+                      value={bioDraft[prompt.key] || ''}
+                      onChange={(e) => setBioDraft({ ...bioDraft, [prompt.key]: e.target.value })}
                       rows={2}
                       className={`w-full p-3 rounded-xl text-sm resize-none ${
                         highContrastMode
@@ -162,7 +194,7 @@ export default function ProfilePage() {
                 ))}
                 <button
                   onClick={handleSaveBio}
-                  className="w-full py-2.5 rounded-xl bg-purple-500 text-white font-semibold flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-[color:var(--color-primary)] text-white font-semibold flex items-center justify-center gap-2"
                 >
                   <Save size={16} /> Save
                 </button>
@@ -207,21 +239,27 @@ export default function ProfilePage() {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setWyrAnswers((prev) => ({ ...prev, [q.id]: 'a' }))}
+                        onClick={() => setWyrDraft((prev) => ({ ...prev, [q.id]: 'a' }))}
                         className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all ${
-                          wyrAnswers[q.id] === 'a'
-                            ? highContrastMode ? 'bg-yellow-400 text-black' : 'bg-purple-500 text-white'
-                            : highContrastMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'
+                          wyrDraft[q.id] === 'a'
+                            ? highContrastMode
+                              ? 'bg-yellow-400 text-black'
+                              : 'bg-[color:var(--color-primary)] text-white'
+                            : highContrastMode
+                              ? 'bg-gray-800 text-gray-300'
+                              : 'bg-gray-100 text-gray-600'
                         }`}
                       >
                         {q.optionA}
                       </button>
                       <button
                         type="button"
-                        onClick={() => setWyrAnswers((prev) => ({ ...prev, [q.id]: 'b' }))}
+                        onClick={() => setWyrDraft((prev) => ({ ...prev, [q.id]: 'b' }))}
                         className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all ${
-                          wyrAnswers[q.id] === 'b'
-                            ? highContrastMode ? 'bg-yellow-400 text-black' : 'bg-purple-500 text-white'
+                          wyrDraft[q.id] === 'b'
+                            ? highContrastMode
+                              ? 'bg-yellow-400 text-black'
+                              : 'bg-[color:var(--color-primary)] text-white'
                             : highContrastMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'
                         }`}
                       >
@@ -257,14 +295,14 @@ export default function ProfilePage() {
             className={`p-4 rounded-2xl ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'}`}
           >
             <div className="flex items-center gap-2 mb-3">
-              <MapPin size={14} className={highContrastMode ? 'text-yellow-400' : 'text-purple-500'} />
+              <MapPin size={14} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
               <span className={`text-sm ${highContrastMode ? 'text-yellow-100' : 'text-gray-800'}`}>
                 {currentUser.location.city} ({currentUser.location.radiusMiles} mi radius)
               </span>
             </div>
             {currentUser.comfortPreferences.length > 0 && (
               <div className="flex items-center gap-2 mb-3">
-                <Clock size={14} className={highContrastMode ? 'text-yellow-400' : 'text-purple-500'} />
+                <Clock size={14} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
                 <span className={`text-sm ${highContrastMode ? 'text-yellow-100' : 'text-gray-800'}`}>
                   {currentUser.comfortPreferences.map((p) => COMFORT_LABELS[p]).join(', ')}
                 </span>
@@ -291,6 +329,60 @@ export default function ProfilePage() {
             transition={{ delay: 0.3 }}
             className="space-y-2"
           >
+            {/* Appearance */}
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-3 mb-3">
+                <Palette size={18} className="text-[color:var(--color-primary)]" />
+                <h3 className="text-sm font-semibold text-gray-800">Appearance</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs font-medium mb-2 text-gray-600">Theme</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['grey', 'black', 'white'] as ThemePreference[]).map((t) => {
+                      const swatch =
+                        t === 'grey' ? '#F3F4F6' : t === 'black' ? '#0B0B0F' : '#FFFFFF';
+                      const selected = themePreference === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            updateCurrentUser({ themePreference: t });
+                          }}
+                          className={`relative rounded-xl p-3 border transition-all ${
+                            selected
+                              ? 'border-[color:var(--color-primary)] ring-2 ring-[color:var(--color-primary)]/20'
+                              : 'border-gray-200'
+                          }`}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-lg border border-black/10 mx-auto"
+                            style={{ background: swatch }}
+                          />
+                          <div className="text-[11px] mt-2 text-center font-semibold text-gray-700">
+                            {t[0].toUpperCase() + t.slice(1)}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium mb-2 text-gray-600">Primary color</div>
+                  <ColorWheelPicker
+                    value={primaryColor}
+                    onChange={(hex) => {
+                      updateCurrentUser({ primaryColor: hex });
+                    }}
+                    size={170}
+                  />
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={toggleHighContrast}
               className={`w-full p-4 rounded-2xl flex items-center justify-between ${

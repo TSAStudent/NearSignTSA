@@ -81,14 +81,17 @@ export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: 
           transition={{ type: 'spring', damping: 15 }}
           onClick={(e) => e.stopPropagation()}
           className={`relative mx-6 p-8 rounded-3xl shadow-2xl text-center max-w-xs w-full ${
-            highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-white'
+            highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
           }`}
         >
           <motion.div
             animate={{ rotate: [0, -5, 5, 0] }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Sparkles className={`mx-auto mb-4 ${highContrastMode ? 'text-yellow-400' : 'text-purple-500'}`} size={48} />
+            <Sparkles
+              className={`mx-auto mb-4 ${highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'}`}
+              size={48}
+            />
           </motion.div>
 
           <h2 className={`text-2xl font-extrabold mb-2 ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
@@ -99,7 +102,12 @@ export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: 
           </p>
 
           <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+            <div
+              className="w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center"
+              style={{
+                backgroundImage: 'linear-gradient(to bottom right, var(--color-primary-light), var(--color-primary))',
+              }}
+            >
               <span className="text-lg font-bold text-white">You</span>
             </div>
             <motion.div
@@ -120,7 +128,7 @@ export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: 
               className={`w-full py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all ${
                 highContrastMode
                   ? 'bg-yellow-400 text-black hover:bg-yellow-300'
-                  : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
+                  : 'bg-[color:var(--color-primary)] text-white hover:opacity-90'
               }`}
             >
               <MessageCircle size={18} />
@@ -131,7 +139,7 @@ export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: 
               className={`w-full py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all ${
                 highContrastMode
                   ? 'bg-gray-800 text-yellow-300 border border-yellow-400/50 hover:bg-gray-700'
-                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                  : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)]/20'
               }`}
             >
               <Sparkles size={18} />

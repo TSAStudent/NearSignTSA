@@ -1,4 +1,5 @@
 export type IdentityType = 'deaf' | 'hoh' | 'hearing_ally';
+export type ThemePreference = 'grey' | 'black' | 'white';
 
 export type CommunicationPreference =
   | 'asl'
@@ -26,6 +27,9 @@ export interface UserProfile {
   communicationPreferences: CommunicationPreference[];
   comfortPreferences: ComfortPreference[];
   interests: string[];
+  themePreference?: ThemePreference;
+  /** Hex color (e.g. #8B5CF6) used for the app's primary accent */
+  primaryColor?: string;
   bio: {
     perfectHangout?: string;
     communicationStyle?: string;

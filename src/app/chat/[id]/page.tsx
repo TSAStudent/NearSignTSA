@@ -84,9 +84,9 @@ export default function ChatPage() {
 
   return (
     <MobileFrame>
-      <div className={`flex flex-col h-full ${highContrastMode ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`flex flex-col h-full ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
         {/* Header */}
-        <div className={`px-4 pt-4 pb-3 flex items-center gap-3 ${highContrastMode ? 'bg-gray-900 border-b border-yellow-400/30' : 'bg-white shadow-sm'
+        <div className={`px-4 pt-4 pb-3 flex items-center gap-3 ${highContrastMode ? 'bg-gray-900 border-b border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
           }`}>
           <button onClick={() => router.push('/chat')} className="p-1">
             <ArrowLeft size={22} className={highContrastMode ? 'text-yellow-400' : 'text-gray-700'} />

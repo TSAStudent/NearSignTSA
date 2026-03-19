@@ -23,7 +23,7 @@ export default function BottomNav() {
       className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm z-40 ${
         highContrastMode
           ? 'bg-gray-900 border-t-2 border-yellow-400'
-          : 'bg-white/95 backdrop-blur-lg border-t border-gray-200'
+          : 'bg-[color:var(--background)]/95 backdrop-blur-lg border-t border-gray-200/30'
       }`}
       style={{ borderBottomLeftRadius: '2.5rem', borderBottomRightRadius: '2.5rem' }}
     >
@@ -39,7 +39,7 @@ export default function BottomNav() {
                 isActive
                   ? highContrastMode
                     ? 'text-yellow-400 bg-yellow-400/10'
-                    : 'text-purple-600 bg-purple-50'
+                    : 'text-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
                   : highContrastMode
                   ? 'text-gray-400 hover:text-yellow-300'
                   : 'text-gray-400 hover:text-gray-600'

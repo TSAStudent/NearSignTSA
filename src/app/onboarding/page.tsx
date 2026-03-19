@@ -251,6 +251,8 @@ export default function OnboardingPage() {
         lng: addressLng ?? undefined,
       },
       availability: [] as AvailabilityVibe[],
+      themePreference: currentUser?.themePreference ?? 'white',
+      primaryColor: currentUser?.primaryColor ?? '#8B5CF6',
       safetySettings: {
         showToHearingAllies: showToAllies,
         allowGroupInvites,

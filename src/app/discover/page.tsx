@@ -154,12 +154,12 @@ export default function DiscoverPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-white'} shadow-sm`}>
+        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <Sparkles size={20} className={highContrastMode ? 'text-yellow-400' : 'text-purple-500'} />
+              <Sparkles size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
               <h1 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                 Discover
               </h1>
@@ -219,10 +219,15 @@ export default function DiscoverPage() {
                   key={profile.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-2xl flex items-center gap-4 ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+                  className={`p-4 rounded-2xl flex items-center gap-4 ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
                     }`}
                 >
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shrink-0">
+                  <div
+                    className="w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundImage: 'linear-gradient(to bottom right, var(--color-primary-light), var(--color-primary))',
+                    }}
+                  >
                     <span className="text-sm font-bold text-white">
                       {profile.name.split(' ').map((n) => n[0]).join('')}
                     </span>
@@ -236,7 +241,7 @@ export default function DiscoverPage() {
                         {profile.distance} mi
                       </span>
                     </div>
-                    <div className={`text-xs mb-1 ${highContrastMode ? 'text-yellow-300' : 'text-purple-600'}`}>
+                    <div className={`text-xs mb-1 ${highContrastMode ? 'text-yellow-300' : 'text-[color:var(--color-primary)]'}`}>
                       {IDENTITY_LABELS[profile.identity]}
                     </div>
                     <div className="flex gap-1">
@@ -251,7 +256,7 @@ export default function DiscoverPage() {
                     onClick={() => handleConnect(profile)}
                     className={`px-3 py-2 rounded-xl text-xs font-semibold ${highContrastMode
                         ? 'bg-yellow-400 text-black'
-                        : 'bg-purple-500 text-white'
+                        : 'bg-[color:var(--color-primary)] text-white'
                       }`}
                   >
                     Connect

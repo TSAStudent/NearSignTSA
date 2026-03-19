@@ -81,21 +81,19 @@ export default function EventsPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-gray-50'}`}>
+      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-white'} shadow-sm`}>
+        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Calendar size={20} className={highContrastMode ? 'text-yellow-400' : 'text-purple-500'} />
+              <Calendar size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
               <h1 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                 Events
               </h1>
             </div>
             <button
               onClick={() => setShowCreate(true)}
-              className={`p-2 rounded-xl ${
-                highContrastMode ? 'bg-yellow-400 text-black' : 'bg-purple-500 text-white'
-              }`}
+              className={`p-2 rounded-xl ${highContrastMode ? 'bg-yellow-400 text-black' : 'bg-[color:var(--color-primary)] text-white'}`}
             >
               <Plus size={18} />
             </button>
@@ -128,19 +126,26 @@ export default function EventsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`rounded-2xl overflow-hidden ${
-                    highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+                    highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
                   }`}
                 >
                   {/* Colored top bar */}
-                  <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500" />
+                  <div
+                    className="h-2"
+                    style={{
+                      backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-primary-light))',
+                    }}
+                  />
                   <div className="p-4">
                     <div className="flex gap-4">
                       {/* Date badge */}
                       <div className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center shrink-0 ${
-                        highContrastMode ? 'bg-yellow-400/20 border border-yellow-400/50' : 'bg-purple-50'
+                        highContrastMode
+                          ? 'bg-yellow-400/20 border border-yellow-400/50'
+                          : 'bg-[color:var(--color-primary)]/10'
                       }`}>
                         <span className={`text-[10px] font-bold uppercase ${
-                          highContrastMode ? 'text-yellow-400' : 'text-purple-500'
+                          highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'
                         }`}>
                           {monthShort}
                         </span>
@@ -182,7 +187,7 @@ export default function EventsPage() {
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                             highContrastMode
                               ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/40'
-                              : 'bg-purple-50 text-purple-600'
+                              : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]'
                           }`}
                         >
                           <Tag size={8} />
@@ -214,10 +219,10 @@ export default function EventsPage() {
                           isRsvpd
                             ? highContrastMode
                               ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
-                              : 'bg-purple-50 text-purple-600 border border-purple-200'
+                              : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
                             : highContrastMode
                             ? 'bg-yellow-400 text-black'
-                            : 'bg-purple-500 text-white'
+                            : 'bg-[color:var(--color-primary)] text-white'
                         }`}
                       >
                         {isRsvpd ? <CheckCircle2 size={14} /> : <Circle size={14} />}
@@ -248,7 +253,7 @@ export default function EventsPage() {
                 transition={{ type: 'spring', damping: 25 }}
                 onClick={(e) => e.stopPropagation()}
                 className={`w-full max-w-sm rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto ${
-                  highContrastMode ? 'bg-gray-900' : 'bg-white'
+                  highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-6">
@@ -354,7 +359,7 @@ export default function EventsPage() {
                             newEvent.tags.includes(tag)
                               ? highContrastMode
                                 ? 'bg-yellow-400 text-black'
-                                : 'bg-purple-500 text-white'
+                                : 'bg-[color:var(--color-primary)] text-white'
                               : highContrastMode
                               ? 'bg-gray-800 text-gray-300'
                               : 'bg-gray-100 text-gray-600'
@@ -388,11 +393,19 @@ export default function EventsPage() {
                       newEvent.title && newEvent.date
                         ? highContrastMode
                           ? 'bg-yellow-400 text-black'
-                          : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                          : 'text-white shadow-lg'
                         : highContrastMode
                         ? 'bg-gray-800 text-gray-600'
                         : 'bg-gray-200 text-gray-400'
                     }`}
+                    style={
+                      newEvent.title && newEvent.date && !highContrastMode
+                        ? {
+                            backgroundImage:
+                              'linear-gradient(to right, var(--color-primary), var(--color-primary-light))',
+                          }
+                        : undefined
+                    }
                   >
                     Create Event
                   </button>

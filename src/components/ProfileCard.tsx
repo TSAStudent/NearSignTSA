@@ -15,27 +15,10 @@ interface ProfileCardProps {
   isSaved: boolean;
 }
 
-const AVATAR_COLORS = [
-  'from-purple-400 to-pink-400',
-  'from-blue-400 to-cyan-400',
-  'from-green-400 to-emerald-400',
-  'from-orange-400 to-amber-400',
-  'from-rose-400 to-red-400',
-  'from-indigo-400 to-violet-400',
-];
-
-function getAvatarColor(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
 export default function ProfileCard({ profile, onConnect, onPass, onSave, isSaved }: ProfileCardProps) {
   const highContrastMode = useStore((s) => s.highContrastMode);
   const currentUser = useStore((s) => s.currentUser);
-  const avatarColor = getAvatarColor(profile.id);
+  const avatarPrimaryGradient = 'from-[color:var(--color-primary-light)] to-[color:var(--color-primary)]';
   const initials = profile.name
     .split(' ')
     .map((n) => n[0])
@@ -102,11 +85,13 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.3 }}
         className={`rounded-3xl overflow-hidden shadow-lg mx-4 ${
-          highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-white'
+          highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
         }`}
       >
         {/* Avatar area */}
-        <div className={`relative h-48 bg-gradient-to-br ${avatarColor} flex items-center justify-center`}>
+        <div
+          className={`relative h-48 bg-gradient-to-br ${avatarPrimaryGradient} flex items-center justify-center`}
+        >
           <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
             <span className="text-3xl font-bold text-white">{initials}</span>
           </div>
@@ -116,7 +101,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               className={`p-1.5 rounded-full border ${
                 highContrastMode
                   ? 'bg-black/60 border-yellow-500/70 text-yellow-300 hover:bg-black'
-                  : 'bg-white/90 border-purple-100 text-purple-600 hover:bg-white'
+                  : 'bg-white/90 border-[color:var(--color-primary)] text-[color:var(--color-primary)] hover:bg-white'
               }`}
               aria-label="See why this is your match"
             >
@@ -133,7 +118,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
           <button
             onClick={onSave}
             className={`absolute top-3 left-3 p-2 rounded-full ${
-              isSaved ? 'bg-purple-500 text-white' : 'bg-white/90 text-gray-600'
+              isSaved ? 'bg-[color:var(--color-primary)] text-white' : 'bg-white/90 text-gray-600'
             }`}
             aria-label={isSaved ? 'Unsave profile' : 'Save profile'}
           >
@@ -148,7 +133,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               <h3 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                 {profile.name}
               </h3>
-              <span className={`text-sm ${highContrastMode ? 'text-yellow-300' : 'text-purple-600'} font-medium`}>
+              <span className={`text-sm ${highContrastMode ? 'text-yellow-300' : 'text-[color:var(--color-primary)]'} font-medium`}>
                 {IDENTITY_LABELS[profile.identity]}
               </span>
             </div>
@@ -170,7 +155,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
                   highContrastMode
                     ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
-                    : 'bg-purple-50 text-purple-700 border border-purple-100'
+                        : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
                 }`}
               >
                 <span>{COMMUNICATION_ICONS[pref]}</span>
@@ -218,7 +203,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
             className={`mb-4 w-full text-xs font-semibold py-2 rounded-2xl border ${
               highContrastMode
                 ? 'border-yellow-400 text-yellow-300 hover:bg-gray-800'
-                : 'border-purple-200 text-purple-700 hover:bg-purple-50'
+                : 'border-[color:var(--color-primary)]/30 text-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)]/10'
             }`}
           >
             View full profile & answers
@@ -243,7 +228,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold transition-all ${
                 highContrastMode
                   ? 'bg-yellow-400 text-black hover:bg-yellow-300'
-                  : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
+                  : 'bg-[color:var(--color-primary)] text-white hover:opacity-90'
               }`}
               aria-label="Connect"
             >
@@ -258,7 +243,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div
               className={`relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl p-5 ${
-                highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-white'
+                highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
               }`}
             >
               <button
@@ -292,7 +277,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
                           highContrastMode
                             ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
-                            : 'bg-purple-50 text-purple-700 border border-purple-100'
+                            : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
                         }`}
                       >
                         <span>{COMMUNICATION_ICONS[pref]}</span>
@@ -400,7 +385,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div
             className={`relative mx-4 max-w-md w-full rounded-3xl p-6 ${
-              highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-white'
+              highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
             }`}
           >
             <button
@@ -416,7 +401,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
             <div className="mb-3 flex items-center gap-2">
               <Info
                 size={20}
-                className={highContrastMode ? 'text-yellow-300' : 'text-purple-500'}
+                className={highContrastMode ? 'text-yellow-300' : 'text-[color:var(--color-primary)]'}
               />
               <h2 className={`text-base font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                 Why this match?
@@ -432,7 +417,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               className={`rounded-2xl px-3 py-2 text-sm ${
                 highContrastMode
                   ? 'bg-gray-800 text-gray-200 border border-yellow-400/40'
-                  : 'bg-purple-50 text-purple-800 border border-purple-100'
+                  : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
               }`}
             >
               {insightLoading && 'Thinking about why this is a good (or not-so-good) match...'}

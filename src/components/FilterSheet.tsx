@@ -61,12 +61,12 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
             transition={{ type: 'spring', damping: 25 }}
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-sm rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto ${
-              highContrastMode ? 'bg-gray-900 border-t-2 border-yellow-400' : 'bg-white'
+              highContrastMode ? 'bg-gray-900 border-t-2 border-yellow-400' : 'bg-[color:var(--background)]'
             }`}
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={20} className={highContrastMode ? 'text-yellow-400' : 'text-purple-600'} />
+                <SlidersHorizontal size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
                 <h2 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                   Filters
                 </h2>
@@ -87,7 +87,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
                 max="50"
                 value={localFilters.distanceMax}
                 onChange={(e) => setLocalFilters((f) => ({ ...f, distanceMax: Number(e.target.value) }))}
-                className="w-full accent-purple-500"
+                className="w-full accent-[color:var(--color-primary)]"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>1 mi</span>
@@ -109,7 +109,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
                       localFilters.ageRange === range
                         ? highContrastMode
                           ? 'bg-yellow-400 text-black'
-                          : 'bg-purple-500 text-white'
+                          : 'bg-[color:var(--color-primary)] text-white'
                         : highContrastMode
                         ? 'bg-gray-800 text-gray-300 border border-gray-700'
                         : 'bg-gray-100 text-gray-600'
@@ -135,7 +135,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
                       localFilters.communicationMustHave.includes(pref)
                         ? highContrastMode
                           ? 'bg-yellow-400 text-black'
-                          : 'bg-purple-500 text-white'
+                          : 'bg-[color:var(--color-primary)] text-white'
                         : highContrastMode
                         ? 'bg-gray-800 text-gray-300 border border-gray-700'
                         : 'bg-gray-100 text-gray-600'
@@ -161,7 +161,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
                       localFilters.interestsMustHave.includes(interest)
                         ? highContrastMode
                           ? 'bg-yellow-400 text-black'
-                          : 'bg-purple-500 text-white'
+                          : 'bg-[color:var(--color-primary)] text-white'
                         : highContrastMode
                         ? 'bg-gray-800 text-gray-300 border border-gray-700'
                         : 'bg-gray-100 text-gray-600'
@@ -184,7 +184,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
                   localFilters.showASLLearners
                     ? highContrastMode
                       ? 'bg-yellow-400'
-                      : 'bg-purple-500'
+                      : 'bg-[color:var(--color-primary)]'
                     : 'bg-gray-300'
                 }`}
               >
@@ -205,7 +205,7 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
               className={`w-full py-3 rounded-2xl font-bold text-lg transition-all ${
                 highContrastMode
                   ? 'bg-yellow-400 text-black hover:bg-yellow-300'
-                  : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
+                  : 'bg-[color:var(--color-primary)] text-white hover:opacity-90'
               }`}
             >
               Apply Filters

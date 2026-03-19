@@ -4,6 +4,7 @@
   --background: #ffffff;
   --foreground: #171717;
   --color-primary: #8B5CF6;
+  --color-primary-rgb: 139, 92, 246;
   --color-primary-light: #A78BFA;
   --color-primary-dark: #7C3AED;
   --color-secondary: #EC4899;
@@ -38,7 +39,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(var(--color-primary-rgb), 0.3);
   border-radius: 10px;
 }
 
@@ -47,7 +48,7 @@ html {
 }
 
 *:focus-visible {
-  outline: 3px solid #8B5CF6;
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
