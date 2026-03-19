@@ -55,6 +55,18 @@ export default function DiscoverPage() {
     loadFromStorage();
   }, [loadFromStorage]);
 
+  const calculateDistanceMiles = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 3959; // miles
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
   useEffect(() => {
     if (!currentUser) {
       router.push('/');
@@ -64,13 +76,25 @@ export default function DiscoverPage() {
       router.push('/onboarding');
       return;
     }
-    // Load seed profiles and compute match scores from current user (interests, communication, would-you-rather)
-    if (discoverProfiles.length === 0) {
-      const withScores = withComputedMatchScores(currentUser, SEED_PROFILES);
-      withScores.sort((a, b) => b.matchScore - a.matchScore);
-      setDiscoverProfiles(withScores);
-    }
-  }, [currentUser, router, discoverProfiles.length, setDiscoverProfiles]);
+
+    const baseLat = currentUser.location.lat;
+    const baseLng = currentUser.location.lng;
+
+    const profilesWithDistance = SEED_PROFILES.map((profile) => {
+      if (baseLat == null || baseLng == null || profile.location.lat == null || profile.location.lng == null) {
+        return profile;
+      }
+      const newDistance = Math.round(calculateDistanceMiles(baseLat, baseLng, profile.location.lat, profile.location.lng) * 10) / 10;
+      return {
+        ...profile,
+        distance: newDistance,
+      };
+    });
+
+    const withScores = withComputedMatchScores(currentUser, profilesWithDistance);
+    withScores.sort((a, b) => b.matchScore - a.matchScore);
+    setDiscoverProfiles(withScores);
+  }, [currentUser, router, setDiscoverProfiles]);
 
   const filteredProfiles = discoverProfiles.filter((p) => {
     if (passedProfiles.includes(p.id)) return false;
@@ -195,9 +219,8 @@ export default function DiscoverPage() {
                   key={profile.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-2xl flex items-center gap-4 ${
-                    highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
-                  }`}
+                  className={`p-4 rounded-2xl flex items-center gap-4 ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+                    }`}
                 >
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold text-white">
@@ -226,11 +249,10 @@ export default function DiscoverPage() {
                   </div>
                   <button
                     onClick={() => handleConnect(profile)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold ${
-                      highContrastMode
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold ${highContrastMode
                         ? 'bg-yellow-400 text-black'
                         : 'bg-purple-500 text-white'
-                    }`}
+                      }`}
                   >
                     Connect
                   </button>

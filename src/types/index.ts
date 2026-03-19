@@ -35,6 +35,7 @@ export interface UserProfile {
   wouldYouRatherAnswers?: Record<string, 'a' | 'b'>;
   location: {
     city: string;
+    address?: string;
     school?: string;
     lat?: number;
     lng?: number;
@@ -153,13 +154,13 @@ export const INTEREST_OPTIONS = [
   // - Sports together (only `Sports` remains as a sports option)
   // - Reading + Writing together
   // - Volunteering + Hiking together
-  'Sports', 'Basketball',
+  'Sports',
   'Gaming', 'Robotics', 'Coding', 'Science', 'Astronomy',
   'Music', 'Art', 'Dance', 'Photography', 'Cooking', 'Movies',
   'Anime', 'Fashion', 'Theater', 'Travel', 'Pets',
-  'Reading', 'Writing',
-  'Hiking', 'Volunteering',
-  'Yoga', 'Nature', 'Crafts', 'Board Games'
+  'Reading', 'Writing', 'Chess',
+  'Hiking', 'Gardening', 'Volunteering',
+  'Yoga', 'Exercising', 'Martial Arts', 'Nature', 'Crafts', 'Board Games'
 ];
 
 export const COMMUNICATION_LABELS: Record<CommunicationPreference, string> = {

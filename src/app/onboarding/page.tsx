@@ -27,12 +27,15 @@ export default function OnboardingPage() {
   const [addressLat, setAddressLat] = useState<number | null>(null);
   const [addressLng, setAddressLng] = useState<number | null>(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
-  const [googlePlacesReady, setGooglePlacesReady] = useState(false);
   const [school, setSchool] = useState('');
+  const [schoolSuggestions, setSchoolSuggestions] = useState<any[]>([]);
+  const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
+  const [isLoadingSchoolSuggestions, setIsLoadingSchoolSuggestions] = useState(false);
+  const schoolDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [radius, setRadius] = useState(15);
-  const [showToAllies, setShowToAllies] = useState(true);
-  const [allowGroupInvites, setAllowGroupInvites] = useState(true);
-  const [showASLLearners, setShowASLLearners] = useState(true);
+  const [showToAllies, setShowToAllies] = useState(false);
+  const [allowGroupInvites, setAllowGroupInvites] = useState(false);
+  const [showASLLearners, setShowASLLearners] = useState(false);
   const [comfortPrefs, setComfortPrefs] = useState<ComfortPreference[]>([]);
   const [preferredName, setPreferredName] = useState('');
   const [ageRange, setAgeRange] = useState('');
@@ -150,16 +153,43 @@ export default function OnboardingPage() {
     setShowSuggestions(false);
   };
 
-  // Don't show any profile-creation steps if user already has an account
-  if (currentUser?.onboardingComplete) {
-    return (
-      <MobileFrame>
-        <div className="flex flex-col items-center justify-center min-h-full bg-gray-50 px-6">
-          <p className="text-gray-600 font-medium">Taking you to Discover...</p>
-        </div>
-      </MobileFrame>
-    );
-  }
+  const fetchSchoolSuggestions = async (input: string) => {
+    if (!input || input.length < 3) {
+      setSchoolSuggestions([]);
+      setIsLoadingSchoolSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSchoolSuggestions(true);
+
+    if (schoolDebounceTimerRef.current) {
+      clearTimeout(schoolDebounceTimerRef.current);
+    }
+
+    schoolDebounceTimerRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/search-address?q=${encodeURIComponent(input)}&type=school`);
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setSchoolSuggestions(data);
+        setShowSchoolSuggestions(true);
+      } catch (error) {
+        console.error('Error fetching school suggestions:', error);
+        setSchoolSuggestions([]);
+      } finally {
+        setIsLoadingSchoolSuggestions(false);
+      }
+    }, 250);
+  };
+
+  const selectSchool = (suggestion: any) => {
+    setSchool(suggestion.display_name);
+    setSchoolSuggestions([]);
+    setShowSchoolSuggestions(false);
+  };
 
   const toggleComm = (pref: CommunicationPreference) => {
     setCommPrefs((p) =>
@@ -183,8 +213,8 @@ export default function OnboardingPage() {
     switch (step) {
       case 0: return preferredName.trim().length > 0 && ageRange.length > 0;
       case 1: return identity !== null;
-      case 2: return commPrefs.length > 0;
-      case 3: return interests.length > 0;
+      case 2: return commPrefs.length > 0 && comfortPrefs.length > 0;
+      case 3: return interests.length >= 3;
       case 4: return address.length > 0;
       case 5: return true;
       case 6: return true;
@@ -288,8 +318,8 @@ export default function OnboardingPage() {
                 key={option.value}
                 onClick={() => setIdentity(option.value)}
                 className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 transition-all ${identity === option.value
-                    ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
-                    : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                  ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
+                  : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
                   }`}
               >
                 <span className="text-3xl">{option.icon}</span>
@@ -314,11 +344,12 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-2 gap-3">
               {(Object.keys(COMMUNICATION_LABELS) as CommunicationPreference[]).map((pref) => (
                 <button
+                  type="button"
                   key={pref}
                   onClick={() => toggleComm(pref)}
-                  className={`p-4 rounded-2xl text-center transition-all ${commPrefs.includes(pref)
-                      ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
-                      : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                  className={`p-4 rounded-2xl text-center transition-all cursor-pointer ${commPrefs.includes(pref)
+                    ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
+                    : 'bg-white border-2 border-gray-100 hover:border-purple-200 text-gray-800'
                     }`}
                 >
                   <span className="text-2xl block mb-1">{COMMUNICATION_ICONS[pref]}</span>
@@ -334,8 +365,8 @@ export default function OnboardingPage() {
                     key={pref}
                     onClick={() => toggleComfort(pref)}
                     className={`p-3 rounded-xl text-xs font-medium transition-all ${comfortPrefs.includes(pref)
-                        ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                        : 'bg-gray-50 text-gray-600 border-2 border-transparent'
+                      ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
+                      : 'bg-gray-50 text-gray-600 border-2 border-transparent'
                       }`}
                   >
                     {COMFORT_LABELS[pref]}
@@ -359,8 +390,8 @@ export default function OnboardingPage() {
                   key={interest}
                   onClick={() => toggleInterest(interest)}
                   className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${interests.includes(interest)
-                      ? 'bg-purple-500 text-white shadow-md scale-[1.02]'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
+                    ? 'bg-purple-500 text-white shadow-md scale-[1.02]'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
                     }`}
                 >
                   {interest}
@@ -409,20 +440,46 @@ export default function OnboardingPage() {
                 </div>
               )}
             </div>
-            <div>
+            <div className="relative">
               <label className="text-sm font-semibold text-gray-700 block mb-2">School (optional)</label>
               <input
                 type="text"
                 value={school}
-                onChange={(e) => setSchool(e.target.value)}
+                onChange={(e) => {
+                  setSchool(e.target.value);
+                  fetchSchoolSuggestions(e.target.value);
+                }}
+                onFocus={() => school && setShowSchoolSuggestions(true)}
                 placeholder="e.g., Lincoln High School"
                 className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-white"
+                autoComplete="off"
               />
+              {isLoadingSchoolSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-3 text-center">
+                  <p className="text-sm text-gray-500">Loading school suggestions...</p>
+                </div>
+              )}
+              {showSchoolSuggestions && schoolSuggestions.length > 0 && !isLoadingSchoolSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                  {schoolSuggestions.map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => selectSchool(suggestion)}
+                      className="w-full text-left px-4 py-3 hover:bg-purple-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    >
+                      <div className="text-sm font-medium text-gray-800">{suggestion.display_name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-700 block mb-2">
                 Distance radius: {radius} miles
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                We use this radius to prioritize matches nearby while keeping your exact address private.
+              </p>
               <input
                 type="range"
                 min="5"
@@ -493,20 +550,34 @@ export default function OnboardingPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setWouldYouRather((prev) => ({ ...prev, [q.id]: 'a' }))}
+                      onClick={() => setWouldYouRather((prev) => {
+                        if (prev[q.id] === 'a') {
+                          const next = { ...prev };
+                          delete next[q.id];
+                          return next;
+                        }
+                        return { ...prev, [q.id]: 'a' };
+                      })}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'a'
-                          ? 'bg-purple-500 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
+                        ? 'bg-purple-500 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
                         }`}
                     >
                       {q.optionA}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setWouldYouRather((prev) => ({ ...prev, [q.id]: 'b' }))}
+                      onClick={() => setWouldYouRather((prev) => {
+                        if (prev[q.id] === 'b') {
+                          const next = { ...prev };
+                          delete next[q.id];
+                          return next;
+                        }
+                        return { ...prev, [q.id]: 'b' };
+                      })}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'b'
-                          ? 'bg-purple-500 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
+                        ? 'bg-purple-500 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
                         }`}
                     >
                       {q.optionB}
@@ -525,6 +596,17 @@ export default function OnboardingPage() {
               <Shield className="mx-auto mb-3 text-purple-500" size={32} />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Safety & boundaries</h2>
               <p className="text-gray-500 text-sm">You can change these anytime in settings</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowToAllies(true);
+                  setAllowGroupInvites(true);
+                  setShowASLLearners(true);
+                }}
+                className="mt-3 px-4 py-2 rounded-xl bg-purple-100 text-purple-700 text-xs font-semibold"
+              >
+                Select all
+              </button>
             </div>
             {[
               {
@@ -623,8 +705,8 @@ export default function OnboardingPage() {
               onClick={step === STEPS.length - 1 ? handleComplete : () => setStep(step + 1)}
               disabled={!canProceed()}
               className={`flex-1 py-3.5 px-4 rounded-2xl font-semibold flex items-center justify-center gap-1 transition-all ${canProceed()
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg hover:shadow-xl'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg hover:shadow-xl'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
             >
               {step === STEPS.length - 1 ? 'Complete' : 'Next'}
