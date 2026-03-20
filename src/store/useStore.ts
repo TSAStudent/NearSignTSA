@@ -7,6 +7,7 @@ import type {
   DiscoverProfile,
   Chat,
   ChatMessage,
+  ChatAttachment,
   Group,
   GroupMessage,
   GroupPost,
@@ -42,7 +43,25 @@ interface AppState {
   // Chats
   chats: Chat[];
   chatMessages: Record<string, ChatMessage[]>;
-  sendMessage: (chatId: string, content: string, type?: ChatMessage['type']) => void;
+  sendMessage: (
+    chatId: string,
+    content: string,
+    type?: ChatMessage['type'],
+    attachments?: ChatAttachment[]
+  ) => void;
+  sendMessageAs: (
+    chatId: string,
+    senderId: string,
+    content: string,
+    type?: ChatMessage['type'],
+    attachments?: ChatAttachment[]
+  ) => void;
+  updateMessageAttachment: (
+    chatId: string,
+    messageId: string,
+    attachmentId: string,
+    updates: Partial<ChatAttachment>
+  ) => void;
   createChat: (participantIds: string[]) => string;
 
   // Groups
@@ -156,15 +175,14 @@ const useStore = create<AppState>((set, get) => ({
   // Chats
   chats: [],
   chatMessages: {},
-  sendMessage: (chatId, content, type = 'text') => {
-    const currentUser = get().currentUser;
-    if (!currentUser) return;
+  sendMessageAs: (chatId, senderId, content, type = 'text', attachments = []) => {
     const message: ChatMessage = {
       id: uuidv4(),
       chatId,
-      senderId: currentUser.id,
+      senderId,
       content,
       type,
+      attachments: attachments.length > 0 ? attachments : undefined,
       createdAt: new Date().toISOString(),
     };
     set((state) => ({
@@ -175,6 +193,42 @@ const useStore = create<AppState>((set, get) => ({
       chats: state.chats.map((c) =>
         c.id === chatId ? { ...c, lastMessage: message } : c
       ),
+    }));
+    get().saveToStorage();
+  },
+  sendMessage: (chatId, content, type = 'text', attachments = []) => {
+    const currentUser = get().currentUser;
+    if (!currentUser) return;
+    get().sendMessageAs(chatId, currentUser.id, content, type, attachments);
+  },
+  updateMessageAttachment: (chatId, messageId, attachmentId, updates) => {
+    set((state) => ({
+      chatMessages: {
+        ...state.chatMessages,
+        [chatId]: (state.chatMessages[chatId] || []).map((msg) => {
+          if (msg.id !== messageId || !msg.attachments) return msg;
+          return {
+            ...msg,
+            attachments: msg.attachments.map((att) =>
+              att.id === attachmentId ? { ...att, ...updates } : att
+            ),
+          };
+        }),
+      },
+      chats: state.chats.map((c) => {
+        if (c.id !== chatId || !c.lastMessage || c.lastMessage.id !== messageId) return c;
+        const last = c.lastMessage;
+        if (!last.attachments) return c;
+        return {
+          ...c,
+          lastMessage: {
+            ...last,
+            attachments: last.attachments.map((att) =>
+              att.id === attachmentId ? { ...att, ...updates } : att
+            ),
+          },
+        };
+      }),
     }));
     get().saveToStorage();
   },

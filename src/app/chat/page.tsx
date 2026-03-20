@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { MessageCircle, Sparkles } from 'lucide-react';
+import { MessageCircle, Sparkles, Bot } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
@@ -11,7 +11,7 @@ import { SEED_PROFILES } from '@/lib/seedData';
 
 export default function ChatListPage() {
   const router = useRouter();
-  const { currentUser, chats, chatMessages, loadFromStorage, highContrastMode } = useStore();
+  const { currentUser, chats, chatMessages, loadFromStorage, highContrastMode, createChat } = useStore();
 
   useEffect(() => {
     loadFromStorage();
@@ -25,6 +25,7 @@ export default function ChatListPage() {
 
   const getParticipantName = (participantIds: string[]) => {
     const otherId = participantIds.find((id) => id !== currentUser.id);
+    if (otherId === 'signy-assistant') return 'Signy';
     const profile = SEED_PROFILES.find((p) => p.id === otherId);
     return profile?.name || 'Unknown';
   };
@@ -37,6 +38,11 @@ export default function ChatListPage() {
   const getLastMessage = (chatId: string) => {
     const messages = chatMessages[chatId] || [];
     return messages[messages.length - 1];
+  };
+
+  const openSignyChat = () => {
+    const signyChatId = createChat([currentUser.id, 'signy-assistant']);
+    router.push(`/chat/${signyChatId}`);
   };
 
   return (
@@ -54,6 +60,28 @@ export default function ChatListPage() {
 
         {/* Chat list */}
         <div className="px-4 py-4 space-y-2">
+          <button
+            onClick={openSignyChat}
+            className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30 hover:bg-gray-800'
+                : 'bg-white shadow-sm hover:shadow-md'
+            }`}
+          >
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shrink-0">
+              <Bot size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h3 className={`font-bold text-sm ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
+                  Signy Assistant
+                </h3>
+              </div>
+              <p className={`text-xs truncate ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                Ask for help with chatting, safety, and planning hangouts.
+              </p>
+            </div>
+          </button>
           {chats.length === 0 ? (
             <div className="text-center py-20">
               <Sparkles size={48} className={`mx-auto mb-4 ${highContrastMode ? 'text-yellow-400/50' : 'text-gray-300'}`} />
@@ -107,7 +135,9 @@ export default function ChatListPage() {
                       )}
                     </div>
                     <p className={`text-xs truncate ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {lastMsg ? lastMsg.content : 'Start a conversation!'}
+                      {lastMsg
+                        ? lastMsg.content || (lastMsg.attachments?.length ? 'Attachment' : 'Start a conversation!')
+                        : 'Start a conversation!'}
                     </p>
                   </div>
                 </motion.button>

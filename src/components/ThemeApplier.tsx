@@ -156,8 +156,10 @@ export default function ThemeApplier() {
   useEffect(() => {
     const themePreference = currentUser?.themePreference ?? 'white';
     const primaryColor = currentUser?.primaryColor ?? DEFAULT_PRIMARY;
+    const fontScale = currentUser?.fontScale === 'large' ? '1.08' : '1';
 
     applyThemeVars(themePreference, primaryColor);
+    document.documentElement.style.setProperty('--font-scale', fontScale);
 
     // High-contrast mode should still override background/foreground to match intent.
     if (highContrastMode) {

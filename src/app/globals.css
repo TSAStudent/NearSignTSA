@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-scale: 1;
   --color-primary: #8B5CF6;
   --color-primary-rgb: 139, 92, 246;
   --color-primary-light: #A78BFA;
@@ -25,6 +26,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  font-size: calc(16px * var(--font-scale));
+  line-height: calc(1.5 * var(--font-scale));
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

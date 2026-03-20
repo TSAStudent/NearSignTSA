@@ -233,6 +233,26 @@ export default function DiscoverPage() {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
+                    {(() => {
+                      const sharedComm = currentUser.communicationPreferences.filter((p) =>
+                        profile.communicationPreferences.includes(p)
+                      ).length;
+                      return (
+                        <div
+                          className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            highContrastMode
+                              ? 'bg-yellow-400/20 text-yellow-300'
+                              : 'bg-blue-50 text-blue-700'
+                          }`}
+                        >
+                          {sharedComm >= 2
+                            ? 'Strong communication match'
+                            : sharedComm === 1
+                            ? 'Some overlap'
+                            : 'Different communication styles'}
+                        </div>
+                      );
+                    })()}
                     <div className="flex items-center justify-between">
                       <h3 className={`font-bold text-sm ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
                         {profile.name}

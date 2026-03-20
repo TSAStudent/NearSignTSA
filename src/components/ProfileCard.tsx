@@ -30,6 +30,15 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insightError, setInsightError] = useState<string | null>(null);
+  const sharedCommCount = currentUser
+    ? currentUser.communicationPreferences.filter((pref) => profile.communicationPreferences.includes(pref)).length
+    : 0;
+  const compatibilityLabel =
+    sharedCommCount >= 2
+      ? 'Strong communication match'
+      : sharedCommCount === 1
+      ? 'Some communication overlap'
+      : 'Different communication styles';
 
   const handleInsightClick = async () => {
     if (!currentUser) return;
@@ -145,6 +154,15 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               <MapPin size={14} />
               <span>{profile.distance} mi</span>
             </div>
+          </div>
+          <div
+            className={`mb-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              highContrastMode
+                ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/40'
+                : 'bg-blue-50 text-blue-700 border border-blue-100'
+            }`}
+          >
+            {compatibilityLabel}
           </div>
 
           {/* Communication preferences */}

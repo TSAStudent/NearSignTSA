@@ -5,11 +5,12 @@ import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Send, Sparkles, MoreVertical, Flag, Ban,
-  Calendar, X
+  Calendar, X, Link2, Video, Bot, Captions, Maximize2
 } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import useStore from '@/store/useStore';
 import { SEED_PROFILES } from '@/lib/seedData';
+import type { ChatAttachment } from '@/types';
 import { ICEBREAKERS } from '@/types';
 
 export default function ChatPage() {
@@ -17,16 +18,33 @@ export default function ChatPage() {
   const params = useParams();
   const chatId = params.id as string;
   const {
-    currentUser, chats, chatMessages, sendMessage,
+    currentUser, chats, chatMessages, sendMessage, sendMessageAs, updateMessageAttachment,
     submitReport, loadFromStorage, highContrastMode
   } = useStore();
   const [message, setMessage] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [showIcebreakers, setShowIcebreakers] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [showChatPrefs, setShowChatPrefs] = useState(false);
   const [showReportThanks, setShowReportThanks] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportDetails, setReportDetails] = useState('');
+  const [draftAttachments, setDraftAttachments] = useState<ChatAttachment[]>([]);
+  const [signyLoading, setSignyLoading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [captionEditor, setCaptionEditor] = useState<{
+    messageId: string;
+    attachmentId: string;
+    text: string;
+  } | null>(null);
+  const [fullscreenVideo, setFullscreenVideo] = useState<{
+    messageId: string;
+    attachmentId: string;
+    url: string;
+    label?: string;
+    captions?: string;
+  } | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,21 +59,90 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, chatId]);
 
+  useEffect(() => {
+    if (!fullscreenVideo) return;
+    const currentMessage = (chatMessages[chatId] || []).find((m) => m.id === fullscreenVideo.messageId);
+    const currentAttachment = currentMessage?.attachments?.find((a) => a.id === fullscreenVideo.attachmentId);
+    if (!currentAttachment) return;
+    if (
+      currentAttachment.captions === fullscreenVideo.captions &&
+      currentAttachment.label === fullscreenVideo.label
+    ) {
+      return;
+    }
+    setFullscreenVideo((prev) =>
+      prev
+        ? {
+            ...prev,
+            captions: currentAttachment.captions,
+            label: currentAttachment.label,
+          }
+        : prev
+    );
+  }, [chatMessages, chatId, fullscreenVideo]);
+
   if (!currentUser) return null;
 
   const chat = chats.find((c) => c.id === chatId);
   if (!chat) return null;
 
   const otherId = chat.participants.find((id) => id !== currentUser.id);
+  const isSignyChat = otherId === 'signy-assistant';
   const otherProfile = SEED_PROFILES.find((p) => p.id === otherId);
-  const otherName = otherProfile?.name || 'Unknown';
-  const otherInitials = otherName.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+  const otherName = isSignyChat ? 'Signy' : (otherProfile?.name || 'Unknown');
+  const otherInitials = isSignyChat
+    ? 'AI'
+    : otherName.split(' ').map((n: string) => n[0]).join('').toUpperCase();
   const messages = chatMessages[chatId] || [];
 
-  const handleSend = () => {
-    if (!message.trim()) return;
-    sendMessage(chatId, message.trim());
+  const askSigny = async (userText: string) => {
+    if (!isSignyChat) return;
+    setSignyLoading(true);
+    try {
+      const history = messages
+        .filter((m) => !m.attachments || m.attachments.length === 0)
+        .slice(-8)
+        .map((m) => ({
+          role: m.senderId === currentUser.id ? 'user' as const : 'assistant' as const,
+          content: m.content,
+        }));
+
+      const res = await fetch('/api/signy-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName: currentUser.name,
+          languagePreference: currentUser.languagePreference ?? 'bilingual',
+          message: userText,
+          history,
+        }),
+      });
+
+      const data = await res.json();
+      const reply = data.reply || 'I am here whenever you need help.';
+      sendMessageAs(chatId, 'signy-assistant', reply, 'assistant');
+    } catch (error) {
+      sendMessageAs(
+        chatId,
+        'signy-assistant',
+        'Sorry, I ran into an issue while replying. Please try again.',
+        'assistant'
+      );
+    } finally {
+      setSignyLoading(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!message.trim() && draftAttachments.length === 0) return;
+    const text = message.trim();
+    sendMessage(chatId, text, 'text', draftAttachments);
     setMessage('');
+    setDraftAttachments([]);
+
+    if (isSignyChat && text) {
+      await askSigny(text);
+    }
   };
 
   const handleIcebreaker = (text: string) => {
@@ -65,6 +152,63 @@ export default function ChatPage() {
 
   const handleHangout = () => {
     sendMessage(chatId, "Hey! Want to plan a hangout? What works for you?", 'hangout_request');
+  };
+
+  const isValidUrl = (value: string) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const addLinkAttachment = () => {
+    const url = window.prompt('Paste a link URL (https://...)');
+    if (!url) return;
+    if (!isValidUrl(url)) {
+      window.alert('Please enter a valid URL.');
+      return;
+    }
+    const label = window.prompt('Optional label for this link:') || undefined;
+    setDraftAttachments((prev) => [
+      ...prev,
+      { id: `${Date.now()}-link`, kind: 'link', url, label: label?.trim() || undefined },
+    ]);
+  };
+
+  const addVideoAttachment = async (file: File) => {
+    setUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload-video', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Upload failed');
+      }
+      const label = window.prompt('Optional short caption for this video:') || undefined;
+      setDraftAttachments((prev) => [
+        ...prev,
+        {
+          id: `${Date.now()}-video`,
+          kind: 'video',
+          url: data.url,
+          label: label?.trim() || file.name,
+        },
+      ]);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Video upload failed.');
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  const removeDraftAttachment = (id: string) => {
+    setDraftAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const handleReport = () => {
@@ -92,13 +236,37 @@ export default function ChatPage() {
             <ArrowLeft size={22} className={highContrastMode ? 'text-yellow-400' : 'text-gray-700'} />
           </button>
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-            <span className="text-xs font-bold text-white">{otherInitials}</span>
+            {isSignyChat ? <Bot size={16} className="text-white" /> : <span className="text-xs font-bold text-white">{otherInitials}</span>}
           </div>
           <div className="flex-1">
             <h2 className={`font-bold text-sm ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
               {otherName}
             </h2>
+            <div className="mt-1 flex flex-wrap gap-1">
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                highContrastMode ? 'bg-gray-800 text-yellow-300' : 'bg-blue-50 text-blue-700'
+              }`}>
+                Visual-first chat
+              </span>
+              {currentUser.chatPreferences?.pace && (
+                <span className={`rounded-full px-2 py-0.5 text-[10px] ${
+                  highContrastMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'
+                }`}>
+                  Pace: {currentUser.chatPreferences.pace}
+                </span>
+              )}
+            </div>
           </div>
+          {!isSignyChat && (
+            <button
+              onClick={() => setShowChatPrefs(true)}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold ${
+                highContrastMode ? 'bg-gray-800 text-yellow-300' : 'bg-blue-50 text-blue-700'
+              }`}
+            >
+              Prefs
+            </button>
+          )}
           <div className="relative">
             <button onClick={() => setShowMenu(!showMenu)} className="p-2">
               <MoreVertical size={18} className={highContrastMode ? 'text-yellow-400' : 'text-gray-500'} />
@@ -166,7 +334,99 @@ export default function ChatPage() {
                       <span className="text-[10px] font-semibold uppercase tracking-wider">Hangout</span>
                     </div>
                   )}
+                  {msg.type === 'assistant' && (
+                    <div className="flex items-center gap-1 mb-1">
+                      <Bot size={12} />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Signy</span>
+                    </div>
+                  )}
                   <p className="text-sm">{msg.content}</p>
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {msg.attachments.map((att) => (
+                        <div key={att.id}>
+                          {att.kind === 'link' ? (
+                            <a
+                              href={att.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`text-xs underline break-all ${
+                                isMe
+                                  ? highContrastMode
+                                    ? 'text-black/80'
+                                    : 'text-white/90'
+                                  : highContrastMode
+                                  ? 'text-yellow-300'
+                                  : 'text-purple-700'
+                              }`}
+                            >
+                              {att.label || att.url}
+                            </a>
+                          ) : (
+                            <div className="space-y-1">
+                              <div className="relative group">
+                                <video
+                                  controls
+                                  src={att.url}
+                                  className="w-full max-h-56 rounded-lg bg-black"
+                                />
+                                {att.captions && (
+                                  <div className="pointer-events-none absolute bottom-9 left-2 right-2 rounded bg-black/75 px-2 py-1 text-center text-[11px] text-white">
+                                    {att.captions}
+                                  </div>
+                                )}
+                                <div className="absolute right-2 top-2 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setCaptionEditor({
+                                        messageId: msg.id,
+                                        attachmentId: att.id,
+                                        text: att.captions || '',
+                                      })
+                                    }
+                                    className="rounded-md bg-black/70 p-1 text-white"
+                                    title="Add/Edit captions"
+                                  >
+                                    <Captions size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setFullscreenVideo({
+                                        messageId: msg.id,
+                                        attachmentId: att.id,
+                                        url: att.url,
+                                        label: att.label,
+                                        captions: att.captions,
+                                      })
+                                    }
+                                    className="rounded-md bg-black/70 p-1 text-white"
+                                    title="Fullscreen"
+                                  >
+                                    <Maximize2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                              {att.label && (
+                                <p className={`text-[11px] ${
+                                  isMe
+                                    ? highContrastMode
+                                      ? 'text-black/80'
+                                      : 'text-white/90'
+                                    : highContrastMode
+                                    ? 'text-gray-300'
+                                    : 'text-gray-600'
+                                }`}>
+                                  {att.label}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <span className={`text-[10px] mt-1 block ${isMe
                     ? highContrastMode ? 'text-black/60' : 'text-white/70'
                     : highContrastMode ? 'text-gray-500' : 'text-gray-400'
@@ -212,6 +472,24 @@ export default function ChatPage() {
         {/* Input */}
         <div className={`px-4 py-3 pb-8 border-t ${highContrastMode ? 'bg-gray-900 border-yellow-400/30' : 'bg-white border-gray-100'
           }`}>
+          {draftAttachments.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {draftAttachments.map((att) => (
+                <div
+                  key={att.id}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${
+                    highContrastMode ? 'bg-gray-800 text-yellow-200' : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {att.kind === 'link' ? <Link2 size={12} /> : <Video size={12} />}
+                  <span className="max-w-40 truncate">{att.label || att.url}</span>
+                  <button onClick={() => removeDraftAttachment(att.id)}>
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-2 mb-2">
             <button
               onClick={() => setShowIcebreakers(!showIcebreakers)}
@@ -229,7 +507,37 @@ export default function ChatPage() {
             >
               <Calendar size={16} />
             </button>
+            <button
+              onClick={addLinkAttachment}
+              className={`p-2 rounded-xl ${
+                highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-blue-50 text-blue-600'
+              }`}
+              title="Attach link"
+            >
+              <Link2 size={16} />
+            </button>
+            <button
+              onClick={() => videoInputRef.current?.click()}
+              className={`p-2 rounded-xl ${
+                highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-rose-50 text-rose-600'
+              }`}
+              title="Upload video"
+            >
+              <Video size={16} />
+            </button>
           </div>
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              await addVideoAttachment(file);
+              e.currentTarget.value = '';
+            }}
+          />
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -244,8 +552,8 @@ export default function ChatPage() {
             />
             <button
               onClick={handleSend}
-              disabled={!message.trim()}
-              className={`p-3 rounded-2xl transition-all ${message.trim()
+              disabled={(!message.trim() && draftAttachments.length === 0) || signyLoading || uploadingVideo}
+              className={`p-3 rounded-2xl transition-all ${(message.trim() || draftAttachments.length > 0) && !signyLoading && !uploadingVideo
                 ? highContrastMode
                   ? 'bg-yellow-400 text-black'
                   : 'bg-purple-500 text-white'
@@ -257,6 +565,16 @@ export default function ChatPage() {
               <Send size={18} />
             </button>
           </div>
+          {isSignyChat && signyLoading && (
+            <p className={`text-[11px] mt-2 ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Signy is typing...
+            </p>
+          )}
+          {uploadingVideo && (
+            <p className={`text-[11px] mt-2 ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Uploading video...
+            </p>
+          )}
         </div>
 
         {/* Report Thanks */}
@@ -284,7 +602,15 @@ export default function ChatPage() {
                 Report {otherName}
               </h3>
               <div className="space-y-2 mb-4">
-                {['Harassment', 'Inappropriate content', 'Spam', 'Fake profile', 'Other'].map((reason) => (
+                {[
+                  'Harassment',
+                  'Inappropriate content',
+                  'Mocking signing / Deaf culture',
+                  'Accessibility harassment',
+                  'Spam',
+                  'Fake profile',
+                  'Other',
+                ].map((reason) => (
                   <button
                     key={reason}
                     onClick={() => setReportReason(reason)}
@@ -331,6 +657,146 @@ export default function ChatPage() {
                 >
                   Submit
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Before-chat preferences modal */}
+        {showChatPrefs && !isSignyChat && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setShowChatPrefs(false)}>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`w-full max-w-sm rounded-2xl p-6 ${highContrastMode ? 'bg-gray-900' : 'bg-white'}`}
+            >
+              <h3 className={`text-lg font-bold mb-3 ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
+                Before we chat
+              </h3>
+              <div className={`space-y-2 text-sm ${highContrastMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <p>
+                  <span className="font-semibold">Their communication:</span>{' '}
+                  {otherProfile?.communicationPreferences.join(', ').replaceAll('_', ' ') || 'Not set'}
+                </p>
+                <p>
+                  <span className="font-semibold">Their comfort:</span>{' '}
+                  {otherProfile?.comfortPreferences.join(', ').replaceAll('_', ' ') || 'Not set'}
+                </p>
+                <p>
+                  <span className="font-semibold">Your pace preference:</span>{' '}
+                  {currentUser.chatPreferences?.pace || 'normal'}
+                </p>
+                <p>
+                  <span className="font-semibold">Captions/typed follow-up:</span>{' '}
+                  {currentUser.chatPreferences?.captionsPreferred === false ? 'Optional' : 'Preferred'}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowChatPrefs(false)}
+                className={`mt-4 w-full py-2.5 rounded-xl font-medium text-sm ${
+                  highContrastMode ? 'bg-yellow-400 text-black' : 'bg-[color:var(--color-primary)] text-white'
+                }`}
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        )}
+
+        {captionEditor && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6"
+            onClick={() => setCaptionEditor(null)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`w-full max-w-sm rounded-2xl p-5 ${highContrastMode ? 'bg-gray-900' : 'bg-white'}`}
+            >
+              <h3 className={`text-base font-bold mb-2 ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
+                Video captions
+              </h3>
+              <p className={`text-xs mb-2 ${highContrastMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Add a caption line that stays visible on this video in chat and fullscreen.
+              </p>
+              <textarea
+                rows={3}
+                value={captionEditor.text}
+                onChange={(e) =>
+                  setCaptionEditor((prev) => (prev ? { ...prev, text: e.target.value } : prev))
+                }
+                placeholder="Type caption text..."
+                className={`w-full rounded-xl border p-3 text-sm ${
+                  highContrastMode
+                    ? 'bg-gray-800 border-gray-700 text-yellow-100'
+                    : 'bg-gray-50 border-gray-200 text-gray-800'
+                }`}
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCaptionEditor(null)}
+                  className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
+                    highContrastMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!captionEditor) return;
+                    updateMessageAttachment(chatId, captionEditor.messageId, captionEditor.attachmentId, {
+                      captions: captionEditor.text.trim() || undefined,
+                    });
+                    setCaptionEditor(null);
+                  }}
+                  className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
+                    highContrastMode ? 'bg-yellow-400 text-black' : 'bg-[color:var(--color-primary)] text-white'
+                  }`}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {fullscreenVideo && (
+          <div className="fixed inset-0 z-50 bg-black">
+            <button
+              type="button"
+              onClick={() => setFullscreenVideo(null)}
+              className="absolute right-4 top-4 z-10 rounded-full bg-black/70 p-2 text-white"
+              aria-label="Close fullscreen video"
+            >
+              <X size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setCaptionEditor({
+                  messageId: fullscreenVideo.messageId,
+                  attachmentId: fullscreenVideo.attachmentId,
+                  text: fullscreenVideo.captions || '',
+                })
+              }
+              className="absolute left-4 top-4 z-10 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white"
+            >
+              <Captions size={14} />
+              Captions
+            </button>
+            <div className="flex h-full w-full items-center justify-center p-4">
+              <div className="relative w-full max-w-5xl">
+                <video
+                  controls
+                  autoPlay
+                  src={fullscreenVideo.url}
+                  className="max-h-[85vh] w-full rounded-xl bg-black"
+                />
+                {fullscreenVideo.captions && (
+                  <div className="pointer-events-none absolute bottom-14 left-3 right-3 rounded bg-black/80 px-3 py-2 text-center text-sm text-white">
+                    {fullscreenVideo.captions}
+                  </div>
+                )}
               </div>
             </div>
           </div>

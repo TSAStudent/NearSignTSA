@@ -1,5 +1,7 @@
 export type IdentityType = 'deaf' | 'hoh' | 'hearing_ally';
 export type ThemePreference = 'grey' | 'black' | 'white';
+export type LanguagePreference = 'asl_first' | 'english' | 'bilingual';
+export type FontScale = 'normal' | 'large';
 
 export type CommunicationPreference =
   | 'asl'
@@ -28,6 +30,13 @@ export interface UserProfile {
   comfortPreferences: ComfortPreference[];
   interests: string[];
   themePreference?: ThemePreference;
+  languagePreference?: LanguagePreference;
+  fontScale?: FontScale;
+  chatPreferences?: {
+    pace?: 'slow' | 'normal' | 'fast';
+    captionsPreferred?: boolean;
+    notes?: string;
+  };
   /** Hex color (e.g. #8B5CF6) used for the app's primary accent */
   primaryColor?: string;
   bio: {
@@ -80,8 +89,17 @@ export interface ChatMessage {
   chatId: string;
   senderId: string;
   content: string;
-  type: 'text' | 'icebreaker' | 'hangout_request' | 'gif';
+  type: 'text' | 'icebreaker' | 'hangout_request' | 'gif' | 'assistant';
+  attachments?: ChatAttachment[];
   createdAt: string;
+}
+
+export interface ChatAttachment {
+  id: string;
+  kind: 'video' | 'link';
+  url: string;
+  label?: string;
+  captions?: string;
 }
 
 export interface Chat {

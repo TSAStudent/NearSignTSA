@@ -7,7 +7,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, MapPin, Shield, Sparkles } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import useStore from '@/store/useStore';
-import type { IdentityType, CommunicationPreference, ComfortPreference, AvailabilityVibe } from '@/types';
+import type {
+  IdentityType,
+  CommunicationPreference,
+  ComfortPreference,
+  AvailabilityVibe,
+  LanguagePreference,
+  FontScale,
+} from '@/types';
 import { COMMUNICATION_LABELS, COMMUNICATION_ICONS, COMFORT_LABELS, INTEREST_OPTIONS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -42,6 +49,10 @@ export default function OnboardingPage() {
   const [perfectHangout, setPerfectHangout] = useState('');
   const [communicationStyle, setCommunicationStyle] = useState('');
   const [lookingForFriend, setLookingForFriend] = useState('');
+  const [languagePreference, setLanguagePreference] = useState<LanguagePreference>('bilingual');
+  const [fontScale, setFontScale] = useState<FontScale>('normal');
+  const [chatPace, setChatPace] = useState<'slow' | 'normal' | 'fast'>('normal');
+  const [captionsPreferred, setCaptionsPreferred] = useState(true);
   const [wouldYouRather, setWouldYouRather] = useState<Record<string, 'a' | 'b'>>({});
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -252,7 +263,13 @@ export default function OnboardingPage() {
       },
       availability: [] as AvailabilityVibe[],
       themePreference: currentUser?.themePreference ?? 'white',
+      languagePreference,
+      fontScale,
       primaryColor: currentUser?.primaryColor ?? '#8B5CF6',
+      chatPreferences: {
+        pace: chatPace,
+        captionsPreferred,
+      },
       safetySettings: {
         showToHearingAllies: showToAllies,
         allowGroupInvites,
@@ -359,6 +376,35 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+            <div className="mt-2">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Language display preference</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'asl_first' as LanguagePreference, label: 'ASL First' },
+                  { value: 'bilingual' as LanguagePreference, label: 'Both' },
+                  { value: 'english' as LanguagePreference, label: 'English' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setLanguagePreference(opt.value)}
+                    className={`p-2 rounded-xl text-xs font-semibold border ${
+                      languagePreference === opt.value
+                        ? 'bg-purple-500 text-white border-purple-500'
+                        : 'bg-white text-gray-700 border-gray-200'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {identity === 'hearing_ally' && (
+              <div className="rounded-2xl bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800">
+                <p className="font-semibold mb-1">Hearing ally quick guidance</p>
+                <p>Lead with patience, use captions/typing when needed, and ask communication preferences before changing styles.</p>
+              </div>
+            )}
             <div className="mt-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Comfort preferences</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -647,6 +693,58 @@ export default function OnboardingPage() {
                 </button>
               </div>
             ))}
+            <div className="bg-white p-4 rounded-2xl border border-gray-100 space-y-3">
+              <h4 className="text-sm font-semibold text-gray-800">Chat comfort defaults</h4>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Conversation pace</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['slow', 'normal', 'fast'] as const).map((pace) => (
+                    <button
+                      key={pace}
+                      type="button"
+                      onClick={() => setChatPace(pace)}
+                      className={`py-2 rounded-xl text-xs font-semibold ${
+                        chatPace === pace ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {pace}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Prefer captions/typed follow-up</p>
+                  <p className="text-xs text-gray-500">Helps others keep communication clear.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCaptionsPreferred((v) => !v)}
+                  className={`w-12 h-6 rounded-full transition-all relative ${captionsPreferred ? 'bg-purple-500' : 'bg-gray-300'}`}
+                >
+                  <div
+                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${captionsPreferred ? 'translate-x-6' : 'translate-x-0.5'}`}
+                  />
+                </button>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Text size</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['normal', 'large'] as FontScale[]).map((scale) => (
+                    <button
+                      key={scale}
+                      type="button"
+                      onClick={() => setFontScale(scale)}
+                      className={`py-2 rounded-xl text-xs font-semibold ${
+                        fontScale === scale ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {scale === 'normal' ? 'Standard' : 'Large'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         );
     }

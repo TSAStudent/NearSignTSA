@@ -13,7 +13,7 @@ import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
 import { COMMUNICATION_ICONS, COMMUNICATION_LABELS, IDENTITY_LABELS, COMFORT_LABELS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
 import ColorWheelPicker from '@/components/ColorWheelPicker';
-import type { ThemePreference } from '@/types';
+import type { ThemePreference, LanguagePreference, FontScale } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -41,6 +41,10 @@ export default function ProfilePage() {
 
   const themePreference = currentUser.themePreference ?? 'white';
   const primaryColor = currentUser.primaryColor ?? '#8B5CF6';
+  const languagePreference = currentUser.languagePreference ?? 'bilingual';
+  const fontScale = currentUser.fontScale ?? 'normal';
+  const chatPace = currentUser.chatPreferences?.pace ?? 'normal';
+  const captionsPreferred = currentUser.chatPreferences?.captionsPreferred ?? true;
 
   const initials = currentUser.name
     .split(' ')
@@ -380,6 +384,89 @@ export default function ProfilePage() {
                     size={170}
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3">Accessibility & Communication</h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs font-medium mb-2 text-gray-600">Language preference</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'asl_first' as LanguagePreference, label: 'ASL First' },
+                      { value: 'bilingual' as LanguagePreference, label: 'Both' },
+                      { value: 'english' as LanguagePreference, label: 'English' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => updateCurrentUser({ languagePreference: opt.value })}
+                        className={`py-2 rounded-xl text-xs font-semibold ${
+                          languagePreference === opt.value ? 'bg-[color:var(--color-primary)] text-white' : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium mb-2 text-gray-600">Text size</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['normal', 'large'] as FontScale[]).map((scale) => (
+                      <button
+                        key={scale}
+                        type="button"
+                        onClick={() => updateCurrentUser({ fontScale: scale })}
+                        className={`py-2 rounded-xl text-xs font-semibold ${
+                          fontScale === scale ? 'bg-[color:var(--color-primary)] text-white' : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {scale === 'normal' ? 'Standard' : 'Large'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium mb-2 text-gray-600">Chat pace preference</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['slow', 'normal', 'fast'] as const).map((pace) => (
+                      <button
+                        key={pace}
+                        type="button"
+                        onClick={() =>
+                          updateCurrentUser({
+                            chatPreferences: { ...currentUser.chatPreferences, pace },
+                          })
+                        }
+                        className={`py-2 rounded-xl text-xs font-semibold ${
+                          chatPace === pace ? 'bg-[color:var(--color-primary)] text-white' : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {pace}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateCurrentUser({
+                      chatPreferences: {
+                        ...currentUser.chatPreferences,
+                        captionsPreferred: !captionsPreferred,
+                      },
+                    })
+                  }
+                  className={`w-full py-2 rounded-xl text-xs font-semibold ${
+                    captionsPreferred
+                      ? 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {captionsPreferred ? 'Captions/typed follow-up preferred' : 'No caption preference set'}
+                </button>
               </div>
             </div>
 
