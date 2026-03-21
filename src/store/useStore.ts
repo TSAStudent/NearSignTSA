@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import type {
   UserProfile,
   DiscoverProfile,
@@ -17,6 +18,87 @@ import type {
   FriendRequest,
   Match,
 } from '@/types';
+import { firestore, isFirebaseConfigured } from '@/lib/firebase';
+
+interface PersistedState {
+  currentUser: UserProfile | null;
+  discoverProfiles: DiscoverProfile[];
+  savedProfiles: string[];
+  passedProfiles: string[];
+  friendRequests: FriendRequest[];
+  matches: Match[];
+  chats: Chat[];
+  chatMessages: Record<string, ChatMessage[]>;
+  groups: Group[];
+  groupMessages: Record<string, GroupMessage[]>;
+  events: Event[];
+  blockedUsers: BlockedUser[];
+  reports: Report[];
+  highContrastMode: boolean;
+}
+
+const DEFAULT_PERSISTED_STATE: PersistedState = {
+  currentUser: null,
+  discoverProfiles: [],
+  savedProfiles: [],
+  passedProfiles: [],
+  friendRequests: [],
+  matches: [],
+  chats: [],
+  chatMessages: {},
+  groups: [],
+  groupMessages: {},
+  events: [],
+  blockedUsers: [],
+  reports: [],
+  highContrastMode: false,
+};
+
+let activeSyncOwnerId: string | null = null;
+let unsubscribeFromRemoteState: (() => void) | null = null;
+
+const getOwnerId = (state: AppState, ownerId?: string | null): string | null => {
+  const candidate = ownerId ?? state.storageOwnerId ?? state.currentUser?.email ?? null;
+  if (!candidate) return null;
+  return candidate.trim().toLowerCase();
+};
+
+const getPersistedState = (state: AppState): PersistedState => ({
+  currentUser: state.currentUser,
+  discoverProfiles: state.discoverProfiles,
+  savedProfiles: state.savedProfiles,
+  passedProfiles: state.passedProfiles,
+  friendRequests: state.friendRequests,
+  matches: state.matches,
+  chats: state.chats,
+  chatMessages: state.chatMessages,
+  groups: state.groups,
+  groupMessages: state.groupMessages,
+  events: state.events,
+  blockedUsers: state.blockedUsers,
+  reports: state.reports,
+  highContrastMode: state.highContrastMode,
+});
+
+const parsePersistedState = (value: unknown): PersistedState => {
+  const data = (value as Partial<PersistedState>) || {};
+  return {
+    currentUser: data.currentUser ?? DEFAULT_PERSISTED_STATE.currentUser,
+    discoverProfiles: data.discoverProfiles ?? DEFAULT_PERSISTED_STATE.discoverProfiles,
+    savedProfiles: data.savedProfiles ?? DEFAULT_PERSISTED_STATE.savedProfiles,
+    passedProfiles: data.passedProfiles ?? DEFAULT_PERSISTED_STATE.passedProfiles,
+    friendRequests: data.friendRequests ?? DEFAULT_PERSISTED_STATE.friendRequests,
+    matches: data.matches ?? DEFAULT_PERSISTED_STATE.matches,
+    chats: data.chats ?? DEFAULT_PERSISTED_STATE.chats,
+    chatMessages: data.chatMessages ?? DEFAULT_PERSISTED_STATE.chatMessages,
+    groups: data.groups ?? DEFAULT_PERSISTED_STATE.groups,
+    groupMessages: data.groupMessages ?? DEFAULT_PERSISTED_STATE.groupMessages,
+    events: data.events ?? DEFAULT_PERSISTED_STATE.events,
+    blockedUsers: data.blockedUsers ?? DEFAULT_PERSISTED_STATE.blockedUsers,
+    reports: data.reports ?? DEFAULT_PERSISTED_STATE.reports,
+    highContrastMode: data.highContrastMode ?? DEFAULT_PERSISTED_STATE.highContrastMode,
+  };
+};
 
 interface AppState {
   // Current user
@@ -91,8 +173,10 @@ interface AppState {
   toggleHighContrast: () => void;
 
   // Persistence
-  loadFromStorage: () => void;
-  saveToStorage: () => void;
+  storageOwnerId: string | null;
+  setStorageOwner: (ownerId: string | null) => void;
+  loadFromStorage: (ownerId?: string | null) => Promise<void>;
+  saveToStorage: () => Promise<void>;
 }
 
 const useStore = create<AppState>((set, get) => ({
@@ -416,56 +500,77 @@ const useStore = create<AppState>((set, get) => ({
   },
 
   // Persistence
-  loadFromStorage: () => {
+  storageOwnerId: null,
+  setStorageOwner: (ownerId) => {
+    const normalizedOwnerId = ownerId?.trim().toLowerCase() || null;
+    set({ storageOwnerId: normalizedOwnerId });
+
+    if (!normalizedOwnerId && unsubscribeFromRemoteState) {
+      unsubscribeFromRemoteState();
+      unsubscribeFromRemoteState = null;
+      activeSyncOwnerId = null;
+    }
+  },
+  loadFromStorage: async (ownerId) => {
     if (typeof window === 'undefined') return;
+
+    const state = get();
+    const resolvedOwnerId = getOwnerId(state, ownerId);
+    if (!resolvedOwnerId) return;
+
+    if (!isFirebaseConfigured || !firestore) {
+      console.warn('Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* env vars to enable sync.');
+      return;
+    }
+
     try {
-      const data = localStorage.getItem('nearsign_data');
-      if (data) {
-        const parsed = JSON.parse(data);
-        set({
-          currentUser: parsed.currentUser || null,
-          discoverProfiles: parsed.discoverProfiles || [],
-          savedProfiles: parsed.savedProfiles || [],
-          passedProfiles: parsed.passedProfiles || [],
-          friendRequests: parsed.friendRequests || [],
-          matches: parsed.matches || [],
-          chats: parsed.chats || [],
-          chatMessages: parsed.chatMessages || {},
-          groups: parsed.groups || [],
-          groupMessages: parsed.groupMessages || {},
-          events: parsed.events || [],
-          blockedUsers: parsed.blockedUsers || [],
-          reports: parsed.reports || [],
-          highContrastMode: parsed.highContrastMode || false,
+      const stateRef = doc(firestore, 'userAppState', resolvedOwnerId);
+      const snapshot = await getDoc(stateRef);
+      if (snapshot.exists()) {
+        const persisted = parsePersistedState(snapshot.data());
+        set({ ...persisted, storageOwnerId: resolvedOwnerId });
+      } else {
+        const legacyData = localStorage.getItem('nearsign_data');
+        if (legacyData) {
+          const persisted = parsePersistedState(JSON.parse(legacyData));
+          set({ ...persisted, storageOwnerId: resolvedOwnerId });
+          await setDoc(stateRef, persisted, { merge: true });
+          localStorage.removeItem('nearsign_data');
+        } else {
+          set({ storageOwnerId: resolvedOwnerId });
+        }
+      }
+
+      if (activeSyncOwnerId !== resolvedOwnerId) {
+        if (unsubscribeFromRemoteState) {
+          unsubscribeFromRemoteState();
+          unsubscribeFromRemoteState = null;
+        }
+
+        activeSyncOwnerId = resolvedOwnerId;
+        unsubscribeFromRemoteState = onSnapshot(stateRef, (docSnapshot) => {
+          if (!docSnapshot.exists()) return;
+          const persisted = parsePersistedState(docSnapshot.data());
+          set({ ...persisted, storageOwnerId: resolvedOwnerId });
         });
       }
     } catch (e) {
-      console.error('Failed to load from storage:', e);
+      console.error('Failed to load from Firebase:', e);
     }
   },
-  saveToStorage: () => {
+  saveToStorage: async () => {
     if (typeof window === 'undefined') return;
+
+    const state = get();
+    const ownerId = getOwnerId(state);
+    if (!ownerId) return;
+    if (!isFirebaseConfigured || !firestore) return;
+
     try {
-      const state = get();
-      const data = {
-        currentUser: state.currentUser,
-        discoverProfiles: state.discoverProfiles,
-        savedProfiles: state.savedProfiles,
-        passedProfiles: state.passedProfiles,
-        friendRequests: state.friendRequests,
-        matches: state.matches,
-        chats: state.chats,
-        chatMessages: state.chatMessages,
-        groups: state.groups,
-        groupMessages: state.groupMessages,
-        events: state.events,
-        blockedUsers: state.blockedUsers,
-        reports: state.reports,
-        highContrastMode: state.highContrastMode,
-      };
-      localStorage.setItem('nearsign_data', JSON.stringify(data));
+      const stateRef = doc(firestore, 'userAppState', ownerId);
+      await setDoc(stateRef, getPersistedState(state), { merge: true });
     } catch (e) {
-      console.error('Failed to save to storage:', e);
+      console.error('Failed to save to Firebase:', e);
     }
   },
 }));
