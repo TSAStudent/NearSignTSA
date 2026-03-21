@@ -530,15 +530,8 @@ const useStore = create<AppState>((set, get) => ({
         const persisted = parsePersistedState(snapshot.data());
         set({ ...persisted, storageOwnerId: resolvedOwnerId });
       } else {
-        const legacyData = localStorage.getItem('nearsign_data');
-        if (legacyData) {
-          const persisted = parsePersistedState(JSON.parse(legacyData));
-          set({ ...persisted, storageOwnerId: resolvedOwnerId });
-          await setDoc(stateRef, persisted, { merge: true });
-          localStorage.removeItem('nearsign_data');
-        } else {
-          set({ storageOwnerId: resolvedOwnerId });
-        }
+        localStorage.removeItem('nearsign_data');
+        set({ storageOwnerId: resolvedOwnerId });
       }
 
       if (activeSyncOwnerId !== resolvedOwnerId) {
