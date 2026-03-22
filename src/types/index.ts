@@ -56,6 +56,8 @@ export interface UserProfile {
   };
   availability: AvailabilityVibe[];
   ageRange?: string;
+  /** Concrete age in years (optional; complements ageRange from onboarding). */
+  age?: number;
   safetySettings: {
     showToHearingAllies: boolean;
     allowGroupInvites: boolean;
@@ -214,6 +216,25 @@ export const COMFORT_LABELS: Record<ComfortPreference, string> = {
   small_group: 'Small Group',
   big_group: 'Big Group Events',
   quiet_spaces: 'Quiet Spaces Preferred',
+};
+
+export const AVAILABILITY_LABELS: Record<AvailabilityVibe, string> = {
+  weekends: 'Weekends',
+  after_school: 'After school',
+  evenings: 'Evenings',
+  anytime: 'Anytime',
+};
+
+export const LANGUAGE_LABELS: Record<LanguagePreference, string> = {
+  asl_first: 'ASL first',
+  english: 'English',
+  bilingual: 'Bilingual (ASL & English)',
+};
+
+/** Shown on onboarding communication step (e.g. "Text" instead of "Text Only"). */
+export const COMMUNICATION_LABELS_ONBOARDING: Record<CommunicationPreference, string> = {
+  ...COMMUNICATION_LABELS,
+  text_only: 'Text',
 };
 
 export const ICEBREAKERS = [

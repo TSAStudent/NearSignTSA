@@ -15,10 +15,27 @@ import type {
   LanguagePreference,
   FontScale,
 } from '@/types';
-import { COMMUNICATION_LABELS, COMMUNICATION_ICONS, COMFORT_LABELS, INTEREST_OPTIONS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
+import {
+  COMMUNICATION_LABELS_ONBOARDING,
+  COMMUNICATION_ICONS,
+  COMFORT_LABELS,
+  AVAILABILITY_LABELS,
+  INTEREST_OPTIONS,
+  WOULD_YOU_RATHER_QUESTIONS,
+} from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
-const STEPS = ['Preferred name', 'Identity', 'Communication', 'Interests', 'Location', 'Short responses', 'Would you rather', 'Safety'];
+const STEPS = [
+  'Preferred name',
+  'Identity',
+  'Communication',
+  'Interests',
+  'Availability',
+  'Location',
+  'Short responses',
+  'Would you rather',
+  'Safety',
+];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -44,6 +61,7 @@ export default function OnboardingPage() {
   const [allowGroupInvites, setAllowGroupInvites] = useState(false);
   const [showASLLearners, setShowASLLearners] = useState(false);
   const [comfortPrefs, setComfortPrefs] = useState<ComfortPreference[]>([]);
+  const [availabilityVibes, setAvailabilityVibes] = useState<AvailabilityVibe[]>([]);
   const [preferredName, setPreferredName] = useState('');
   const [ageRange, setAgeRange] = useState('');
   const [perfectHangout, setPerfectHangout] = useState('');
@@ -220,16 +238,23 @@ export default function OnboardingPage() {
     );
   };
 
+  const toggleAvailabilityVibe = (vibe: AvailabilityVibe) => {
+    setAvailabilityVibes((p) =>
+      p.includes(vibe) ? p.filter((x) => x !== vibe) : [...p, vibe]
+    );
+  };
+
   const canProceed = () => {
     switch (step) {
       case 0: return preferredName.trim().length > 0 && ageRange.length > 0;
       case 1: return identity !== null;
       case 2: return commPrefs.length > 0 && comfortPrefs.length > 0;
       case 3: return interests.length >= 3;
-      case 4: return address.length > 0;
-      case 5: return true;
+      case 4: return availabilityVibes.length > 0;
+      case 5: return address.length > 0;
       case 6: return true;
       case 7: return true;
+      case 8: return true;
       default: return false;
     }
   };
@@ -261,7 +286,7 @@ export default function OnboardingPage() {
         lat: addressLat ?? undefined,
         lng: addressLng ?? undefined,
       },
-      availability: [] as AvailabilityVibe[],
+      availability: availabilityVibes,
       themePreference: currentUser?.themePreference ?? 'white',
       languagePreference,
       fontScale,
@@ -359,7 +384,7 @@ export default function OnboardingPage() {
               <p className="text-gray-500 text-sm">Select all that apply</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {(Object.keys(COMMUNICATION_LABELS) as CommunicationPreference[]).map((pref) => (
+              {(Object.keys(COMMUNICATION_LABELS_ONBOARDING) as CommunicationPreference[]).map((pref) => (
                 <button
                   type="button"
                   key={pref}
@@ -370,7 +395,7 @@ export default function OnboardingPage() {
                     }`}
                 >
                   <span className="text-2xl block mb-1">{COMMUNICATION_ICONS[pref]}</span>
-                  <span className="text-sm font-semibold">{COMMUNICATION_LABELS[pref]}</span>
+                  <span className="text-sm font-semibold">{COMMUNICATION_LABELS_ONBOARDING[pref]}</span>
                 </button>
               ))}
             </div>
@@ -447,6 +472,32 @@ export default function OnboardingPage() {
         );
 
       case 4:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">When are you usually free?</h2>
+              <p className="text-gray-500 text-sm">Pick the times you&apos;re most often available to meet or chat</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(AVAILABILITY_LABELS) as AvailabilityVibe[]).map((vibe) => (
+                <button
+                  type="button"
+                  key={vibe}
+                  onClick={() => toggleAvailabilityVibe(vibe)}
+                  className={`p-4 rounded-2xl text-center transition-all cursor-pointer ${
+                    availabilityVibes.includes(vibe)
+                      ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
+                      : 'bg-pink-100 border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                  }`}
+                >
+                  <span className="text-sm font-semibold">{AVAILABILITY_LABELS[vibe]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 5:
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">
@@ -541,7 +592,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">
@@ -581,7 +632,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">
@@ -634,7 +685,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 7:
+      case 8:
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">

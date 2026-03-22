@@ -4,7 +4,15 @@ import React, { useState } from 'react';
 import { MapPin, Bookmark, UserPlus, X, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { DiscoverProfile } from '@/types';
-import { COMMUNICATION_ICONS, COMMUNICATION_LABELS, IDENTITY_LABELS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
+import {
+  COMMUNICATION_ICONS,
+  COMMUNICATION_LABELS,
+  COMFORT_LABELS,
+  AVAILABILITY_LABELS,
+  LANGUAGE_LABELS,
+  IDENTITY_LABELS,
+  WOULD_YOU_RATHER_QUESTIONS,
+} from '@/types';
 import useStore from '@/store/useStore';
 
 interface ProfileCardProps {
@@ -205,7 +213,10 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
 
           {/* Availability */}
           <div className={`text-xs mb-4 ${highContrastMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Available: {profile.availability.map((a) => a.replace('_', ' ')).join(', ')}
+            Available:{' '}
+            {profile.availability.length > 0
+              ? profile.availability.map((a) => AVAILABILITY_LABELS[a]).join(', ')
+              : 'Not specified'}
           </div>
 
           {/* Bio preview */}
@@ -281,6 +292,10 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                 <p className={`text-xs ${highContrastMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {IDENTITY_LABELS[profile.identity]} • {profile.distance} mi away
                 </p>
+                <p className={`text-xs mt-1 ${highContrastMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {profile.age != null ? `Age ${profile.age}` : 'Age not set'}
+                  {profile.ageRange ? ` · ${profile.ageRange}` : ''}
+                </p>
               </div>
 
               <div className="space-y-4 text-sm">
@@ -288,21 +303,25 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                   <h3 className={`mb-1 font-semibold ${highContrastMode ? 'text-yellow-200' : 'text-gray-800'}`}>
                     Communication preferences
                   </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.communicationPreferences.map((pref) => (
-                      <span
-                        key={pref}
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-                          highContrastMode
-                            ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
-                            : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
-                        }`}
-                      >
-                        <span>{COMMUNICATION_ICONS[pref]}</span>
-                        {COMMUNICATION_LABELS[pref]}
-                      </span>
-                    ))}
-                  </div>
+                  {profile.communicationPreferences.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.communicationPreferences.map((pref) => (
+                        <span
+                          key={pref}
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                            highContrastMode
+                              ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/50'
+                              : 'bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)] border border-[color:var(--color-primary)]/20'
+                          }`}
+                        >
+                          <span>{COMMUNICATION_ICONS[pref]}</span>
+                          {COMMUNICATION_LABELS[pref]}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={highContrastMode ? 'text-gray-400' : 'text-gray-500'}>Not shared</p>
+                  )}
                 </div>
 
                 <div>
@@ -310,7 +329,9 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                     Comfort preferences
                   </h3>
                   <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
-                    {profile.comfortPreferences.join(', ')}
+                    {profile.comfortPreferences.length > 0
+                      ? profile.comfortPreferences.map((c) => COMFORT_LABELS[c]).join(', ')
+                      : 'Not shared'}
                   </p>
                 </div>
 
@@ -318,20 +339,24 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                   <h3 className={`mb-1 font-semibold ${highContrastMode ? 'text-yellow-200' : 'text-gray-800'}`}>
                     Interests
                   </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.interests.map((interest) => (
-                      <span
-                        key={interest}
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                          highContrastMode
-                            ? 'bg-gray-800 text-gray-200 border border-gray-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
+                  {profile.interests.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.interests.map((interest) => (
+                        <span
+                          key={interest}
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                            highContrastMode
+                              ? 'bg-gray-800 text-gray-200 border border-gray-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={highContrastMode ? 'text-gray-400' : 'text-gray-500'}>Not shared</p>
+                  )}
                 </div>
 
                 <div>
@@ -339,8 +364,58 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                     Availability
                   </h3>
                   <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
-                    {profile.availability.map((a) => a.replace('_', ' ')).join(', ')}
+                    {profile.availability.length > 0
+                      ? profile.availability.map((a) => AVAILABILITY_LABELS[a]).join(', ')
+                      : 'Not shared'}
                   </p>
+                </div>
+
+                <div>
+                  <h3 className={`mb-1 font-semibold ${highContrastMode ? 'text-yellow-200' : 'text-gray-800'}`}>
+                    Location &amp; matching
+                  </h3>
+                  <div className={`space-y-1 ${highContrastMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p>
+                      <span className="font-semibold">School: </span>
+                      {profile.location.school ?? 'Not shared'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Preferred Match Radius: </span>
+                      {profile.location.radiusMiles} mi
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className={`mb-1 font-semibold ${highContrastMode ? 'text-yellow-200' : 'text-gray-800'}`}>
+                    Language &amp; chat preferences
+                  </h3>
+                  <div className={`space-y-1 ${highContrastMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p>
+                      <span className="font-semibold">In-app language: </span>
+                      {profile.languagePreference ? LANGUAGE_LABELS[profile.languagePreference] : 'Not shared'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Conversation pace: </span>
+                      {profile.chatPreferences?.pace
+                        ? profile.chatPreferences.pace.charAt(0).toUpperCase() + profile.chatPreferences.pace.slice(1)
+                        : 'Not shared'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Prefers captions / typed follow-up: </span>
+                      {profile.chatPreferences?.captionsPreferred === undefined
+                        ? 'Not shared'
+                        : profile.chatPreferences.captionsPreferred
+                        ? 'Yes'
+                        : 'No'}
+                    </p>
+                    {profile.chatPreferences?.notes ? (
+                      <p>
+                        <span className="font-semibold">Chat notes: </span>
+                        {profile.chatPreferences.notes}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div>
@@ -348,24 +423,18 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                     Bio
                   </h3>
                   <div className="space-y-1">
-                    {profile.bio.perfectHangout && (
-                      <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
-                        <span className="font-semibold">Perfect hangout: </span>
-                        {profile.bio.perfectHangout}
-                      </p>
-                    )}
-                    {profile.bio.communicationStyle && (
-                      <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
-                        <span className="font-semibold">Communication style: </span>
-                        {profile.bio.communicationStyle}
-                      </p>
-                    )}
-                    {profile.bio.lookingForFriend && (
-                      <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
-                        <span className="font-semibold">Looking for: </span>
-                        {profile.bio.lookingForFriend}
-                      </p>
-                    )}
+                    <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
+                      <span className="font-semibold">Perfect hangout: </span>
+                      {profile.bio.perfectHangout ?? 'Not shared'}
+                    </p>
+                    <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
+                      <span className="font-semibold">Communication style: </span>
+                      {profile.bio.communicationStyle ?? 'Not shared'}
+                    </p>
+                    <p className={highContrastMode ? 'text-gray-300' : 'text-gray-700'}>
+                      <span className="font-semibold">Looking for: </span>
+                      {profile.bio.lookingForFriend ?? 'Not shared'}
+                    </p>
                   </div>
                 </div>
 
@@ -387,7 +456,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
                       ))
                     ) : (
                       <p className={highContrastMode ? 'text-gray-400' : 'text-gray-500'}>
-                        No would-you-rather answers yet.
+                        Not shared
                       </p>
                     )}
                   </div>

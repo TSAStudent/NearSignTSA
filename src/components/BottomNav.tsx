@@ -29,7 +29,10 @@ export default function BottomNav() {
     >
       <div className="flex items-center justify-around px-2 py-2 pb-6">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.path);
+          const isActive =
+            pathname.startsWith(item.path) ||
+            (item.path === '/discover' &&
+              (pathname.startsWith('/search') || pathname.startsWith('/user')));
           const Icon = item.icon;
           return (
             <button

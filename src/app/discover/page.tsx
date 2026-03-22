@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, List, LayoutGrid, Sparkles } from 'lucide-react';
+import { SlidersHorizontal, List, LayoutGrid, Sparkles, Search } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import ProfileCard from '@/components/ProfileCard';
@@ -12,6 +12,7 @@ import FilterSheet from '@/components/FilterSheet';
 import useStore from '@/store/useStore';
 import { SEED_PROFILES } from '@/lib/seedData';
 import { withComputedMatchScores } from '@/lib/matchScore';
+import { calculateDistanceMiles } from '@/lib/geo';
 import type { DiscoverProfile, CommunicationPreference } from '@/types';
 import { COMMUNICATION_ICONS, COMMUNICATION_LABELS, IDENTITY_LABELS, ICEBREAKERS } from '@/types';
 
@@ -54,18 +55,6 @@ export default function DiscoverPage() {
   useEffect(() => {
     loadFromStorage();
   }, [loadFromStorage]);
-
-  const calculateDistanceMiles = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 3959; // miles
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
 
   useEffect(() => {
     if (!currentUser) {
@@ -165,6 +154,14 @@ export default function DiscoverPage() {
               </h1>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.push('/search')}
+                className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+                aria-label="Search people"
+              >
+                <Search size={18} />
+              </button>
               <button
                 onClick={() => setViewMode(viewMode === 'cards' ? 'list' : 'cards')}
                 className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
