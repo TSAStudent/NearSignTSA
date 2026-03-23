@@ -190,14 +190,19 @@ export default function ChatPage() {
       if (!res.ok) {
         throw new Error(data?.error || 'Upload failed');
       }
-      const label = window.prompt('Optional short caption for this video:') || undefined;
+      const transcript =
+        typeof data.transcript === 'string' && data.transcript.trim()
+          ? data.transcript.trim()
+          : undefined;
+      const baseName = file.name.replace(/\.[^.]+$/, '') || file.name;
       setDraftAttachments((prev) => [
         ...prev,
         {
           id: `${Date.now()}-video`,
           kind: 'video',
           url: data.url,
-          label: label?.trim() || file.name,
+          label: baseName,
+          captions: transcript,
         },
       ]);
     } catch (error) {
@@ -572,7 +577,7 @@ export default function ChatPage() {
           )}
           {uploadingVideo && (
             <p className={`text-[11px] mt-2 ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              Uploading video...
+              Uploading video & generating captions…
             </p>
           )}
         </div>
