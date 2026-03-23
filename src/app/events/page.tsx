@@ -23,6 +23,7 @@ export default function EventsPage() {
     currentUser, events, rsvpEvent, unrsvpEvent, createEvent,
     loadFromStorage, highContrastMode
   } = useStore();
+  const [listFilter, setListFilter] = useState<'all' | 'mine'>('all');
   const [showCreate, setShowCreate] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -62,6 +63,12 @@ export default function EventsPage() {
 
   if (!currentUser) return null;
 
+  const isMyEvent = (event: (typeof events)[number]) =>
+    event.organizerId === currentUser.id || event.rsvps.includes(currentUser.id);
+
+  const filteredEvents =
+    listFilter === 'mine' ? events.filter(isMyEvent) : events;
+
   const toggleTag = (tag: string) => {
     setNewEvent((e) => ({
       ...e,
@@ -98,6 +105,26 @@ export default function EventsPage() {
               <Plus size={18} />
             </button>
           </div>
+          <div className="flex gap-2 mt-3">
+            {(['all', 'mine'] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setListFilter(key)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                  listFilter === key
+                    ? highContrastMode
+                      ? 'bg-yellow-400 text-black'
+                      : 'bg-[color:var(--color-primary)] text-white'
+                    : highContrastMode
+                      ? 'bg-gray-800 text-gray-400 border border-gray-700'
+                      : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {key === 'all' ? 'All events' : 'My events'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Events list */}
@@ -112,8 +139,25 @@ export default function EventsPage() {
                 Create one to get started!
               </p>
             </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="text-center py-16">
+              <Calendar size={48} className={`mx-auto mb-4 ${highContrastMode ? 'text-yellow-400/50' : 'text-gray-300'}`} />
+              <h3 className={`text-lg font-bold mb-2 ${highContrastMode ? 'text-yellow-100' : 'text-gray-700'}`}>
+                No matching events
+              </h3>
+              <p className={`text-sm ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                You aren&apos;t hosting or RSVP&apos;d to any events yet.{' '}
+                <button
+                  type="button"
+                  onClick={() => setListFilter('all')}
+                  className={`font-semibold underline ${highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'}`}
+                >
+                  Show all events
+                </button>
+              </p>
+            </div>
           ) : (
-            events.map((event, index) => {
+            filteredEvents.map((event, index) => {
               const isRsvpd = event.rsvps.includes(currentUser.id);
               const eventDate = new Date(event.date);
               const monthShort = eventDate.toLocaleDateString('en-US', { month: 'short' });

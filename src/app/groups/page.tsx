@@ -17,6 +17,7 @@ export default function GroupsPage() {
     loadFromStorage, highContrastMode
   } = useStore();
   const [search, setSearch] = useState('');
+  const [listFilter, setListFilter] = useState<'all' | 'mine'>('all');
   const [showCreate, setShowCreate] = useState(false);
   const [newGroup, setNewGroup] = useState({
     name: '',
@@ -55,10 +56,14 @@ export default function GroupsPage() {
 
   if (!currentUser) return null;
 
-  const filteredGroups = groups.filter((g) =>
+  const searchFiltered = groups.filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase()) ||
     g.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
   );
+  const filteredGroups =
+    listFilter === 'mine'
+      ? searchFiltered.filter((g) => g.members.includes(currentUser.id))
+      : searchFiltered;
 
   const handleCreateGroup = () => {
     if (!newGroup.name || !newGroup.description) return;
@@ -116,6 +121,26 @@ export default function GroupsPage() {
               }`}
             />
           </div>
+          <div className="flex gap-2 mt-3">
+            {(['all', 'mine'] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setListFilter(key)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                  listFilter === key
+                    ? highContrastMode
+                      ? 'bg-yellow-400 text-black'
+                      : 'bg-[color:var(--color-primary)] text-white'
+                    : highContrastMode
+                      ? 'bg-gray-800 text-gray-400 border border-gray-700'
+                      : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {key === 'all' ? 'All groups' : 'My groups'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Groups list */}
@@ -127,7 +152,9 @@ export default function GroupsPage() {
                 No groups found
               </h3>
               <p className={`text-sm mb-4 ${highContrastMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                Create one or adjust your search
+                {listFilter === 'mine'
+                  ? "You haven't joined any groups yet. Try All groups or search."
+                  : 'Create one or adjust your search'}
               </p>
             </div>
           ) : (
@@ -294,7 +321,17 @@ export default function GroupsPage() {
                       Tags
                     </label>
                     <div className="flex flex-wrap gap-1.5">
-                      {['Deaf Community', 'ASL', 'STEM', 'Social', 'Sports', 'Arts', ...INTEREST_OPTIONS.slice(0, 6)].map((tag) => (
+                      {Array.from(
+                        new Set([
+                          'Deaf Community',
+                          'ASL',
+                          'STEM',
+                          'Social',
+                          'Sports',
+                          'Arts',
+                          ...INTEREST_OPTIONS.slice(0, 6),
+                        ])
+                      ).map((tag) => (
                         <button
                           key={tag}
                           onClick={() => toggleTag(tag)}
