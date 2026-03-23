@@ -37,7 +37,7 @@ export interface UserProfile {
     captionsPreferred?: boolean;
     notes?: string;
   };
-  /** Hex color (e.g. #8B5CF6) used for the app's primary accent */
+  /** Hex color (e.g. #0284c7) used for the app's primary accent */
   primaryColor?: string;
   bio: {
     perfectHangout?: string;

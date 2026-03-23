@@ -10,6 +10,7 @@ import ProfileCard from '@/components/ProfileCard';
 import MatchModal from '@/components/MatchModal';
 import FilterSheet from '@/components/FilterSheet';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_PROFILES } from '@/lib/seedData';
 import { withComputedMatchScores } from '@/lib/matchScore';
 import { calculateDistanceMiles } from '@/lib/geo';
@@ -39,6 +40,7 @@ export default function DiscoverPage() {
     discoverProfiles,
     setDiscoverProfiles,
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matchProfile, setMatchProfile] = useState<DiscoverProfile | null>(null);
@@ -143,9 +145,25 @@ export default function DiscoverPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`min-h-full pb-24 ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
+        <div
+          className={`px-6 pt-4 pb-4 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Sparkles size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
@@ -157,20 +175,38 @@ export default function DiscoverPage() {
               <button
                 type="button"
                 onClick={() => router.push('/search')}
-                className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+                className={`p-2 rounded-xl ${
+                  highContrastMode
+                    ? 'bg-gray-800 text-yellow-400'
+                    : isWarmGradient
+                      ? 'bg-slate-100 text-slate-700 border border-slate-200/90 shadow-sm'
+                      : 'bg-gray-100 text-gray-600'
+                }`}
                 aria-label="Search people"
               >
                 <Search size={18} />
               </button>
               <button
                 onClick={() => setViewMode(viewMode === 'cards' ? 'list' : 'cards')}
-                className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+                className={`p-2 rounded-xl ${
+                  highContrastMode
+                    ? 'bg-gray-800 text-yellow-400'
+                    : isWarmGradient
+                      ? 'bg-slate-100 text-slate-700 border border-slate-200/90 shadow-sm'
+                      : 'bg-gray-100 text-gray-600'
+                }`}
               >
                 {viewMode === 'cards' ? <List size={18} /> : <LayoutGrid size={18} />}
               </button>
               <button
                 onClick={() => setShowFilters(true)}
-                className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+                className={`p-2 rounded-xl ${
+                  highContrastMode
+                    ? 'bg-gray-800 text-yellow-400'
+                    : isWarmGradient
+                      ? 'bg-slate-100 text-slate-700 border border-slate-200/90 shadow-sm'
+                      : 'bg-gray-100 text-gray-600'
+                }`}
               >
                 <SlidersHorizontal size={18} />
               </button>
@@ -216,8 +252,13 @@ export default function DiscoverPage() {
                   key={profile.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-2xl flex items-center gap-4 ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
-                    }`}
+                  className={`p-4 rounded-2xl flex items-center gap-4 ${
+                    highContrastMode
+                      ? 'bg-gray-900 border border-yellow-400/30'
+                      : isWarmGradient
+                        ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                        : 'bg-[color:var(--background)] shadow-sm'
+                  }`}
                 >
                   <div
                     className="w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0"

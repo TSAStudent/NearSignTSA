@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Compass, Users, Calendar, MessageCircle, User } from 'lucide-react';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 const NAV_ITEMS = [
   { label: 'Discover', icon: Compass, path: '/discover' },
@@ -17,13 +18,16 @@ export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const highContrastMode = useStore((s) => s.highContrastMode);
+  const { isWarmGradient } = useAppTheme();
 
   return (
     <div
       className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm z-40 ${
         highContrastMode
           ? 'bg-gray-900 border-t-2 border-yellow-400'
-          : 'bg-[color:var(--background)]/95 backdrop-blur-lg border-t border-gray-200/30'
+          : isWarmGradient
+            ? 'bg-[color:var(--surface-glass)] backdrop-blur-xl border-t border-sky-200/40 shadow-[0_-1px_0_0_rgba(3,105,161,0.10)]'
+            : 'bg-[color:var(--background)]/95 backdrop-blur-lg border-t border-gray-200/30'
       }`}
       style={{ borderBottomLeftRadius: '2.5rem', borderBottomRightRadius: '2.5rem' }}
     >
@@ -42,7 +46,7 @@ export default function BottomNav() {
                 isActive
                   ? highContrastMode
                     ? 'text-yellow-400 bg-yellow-400/10'
-                    : 'text-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
+                    : 'text-sky-900 bg-sky-100/90'
                   : highContrastMode
                   ? 'text-gray-400 hover:text-yellow-300'
                   : 'text-gray-400 hover:text-gray-600'

@@ -8,6 +8,7 @@ import BottomNav from '@/components/BottomNav';
 import ProfileCard from '@/components/ProfileCard';
 import MatchModal from '@/components/MatchModal';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { getDiscoverProfileForViewer } from '@/lib/discoverProfiles';
 import type { DiscoverProfile } from '@/types';
 import { ICEBREAKERS } from '@/types';
@@ -29,6 +30,7 @@ export default function UserProfilePage() {
     blockedUsers,
     chats,
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
 
   const [matchProfile, setMatchProfile] = useState<DiscoverProfile | null>(null);
 
@@ -95,7 +97,11 @@ export default function UserProfilePage() {
       <MobileFrame>
         <div
           className={`min-h-full pb-24 px-6 pt-6 ${
-            highContrastMode ? 'bg-black text-yellow-100' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+            highContrastMode
+              ? 'bg-black text-yellow-100'
+              : isWarmGradient
+                ? 'bg-transparent text-[color:var(--foreground)]'
+                : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
           }`}
         >
           <button
@@ -126,15 +132,33 @@ export default function UserProfilePage() {
     <MobileFrame>
       <div
         className={`min-h-full pb-24 ${
-          highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
         }`}
       >
-        <div className={`px-4 pt-4 pb-2 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'}`}>
+        <div
+          className={`px-4 pt-4 pb-2 ${
+            highContrastMode
+              ? 'bg-gray-900'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+              className={`p-2 rounded-xl ${
+                highContrastMode
+                  ? 'bg-gray-800 text-yellow-400'
+                  : isWarmGradient
+                    ? 'bg-slate-100 text-slate-700 border border-slate-200/90 shadow-sm'
+                    : 'bg-gray-100 text-gray-600'
+              }`}
               aria-label="Go back"
             >
               <ArrowLeft size={20} />

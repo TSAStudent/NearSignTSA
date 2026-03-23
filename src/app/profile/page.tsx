@@ -11,6 +11,7 @@ import {
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { COMMUNICATION_ICONS, COMMUNICATION_LABELS, IDENTITY_LABELS, COMFORT_LABELS, WOULD_YOU_RATHER_QUESTIONS } from '@/types';
 import ColorWheelPicker from '@/components/ColorWheelPicker';
 import type { ThemePreference, LanguagePreference, FontScale } from '@/types';
@@ -18,6 +19,7 @@ import type { ThemePreference, LanguagePreference, FontScale } from '@/types';
 export default function ProfilePage() {
   const router = useRouter();
   const { currentUser, updateCurrentUser, highContrastMode, toggleHighContrast, loadFromStorage } = useStore();
+  const { isWarmGradient } = useAppTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [bioDraft, setBioDraft] = useState({
     perfectHangout: '',
@@ -40,7 +42,7 @@ export default function ProfilePage() {
   if (!currentUser) return null;
 
   const themePreference = currentUser.themePreference ?? 'white';
-  const primaryColor = currentUser.primaryColor ?? '#8B5CF6';
+  const primaryColor = currentUser.primaryColor ?? '#0284c7';
   const languagePreference = currentUser.languagePreference ?? 'bilingual';
   const fontScale = currentUser.fontScale ?? 'normal';
   const chatPace = currentUser.chatPreferences?.pace ?? 'normal';
@@ -83,7 +85,11 @@ export default function ProfilePage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)]'}`}>
+      <div
+        className={`min-h-full pb-24 ${
+          highContrastMode ? 'bg-black' : isWarmGradient ? 'bg-transparent' : 'bg-[color:var(--background)]'
+        }`}
+      >
         {/* Header */}
         <div
           className="px-6 pt-6 pb-16 relative"
@@ -141,7 +147,13 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-4 rounded-2xl ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'}`}
+            className={`p-4 rounded-2xl ${
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
+            }`}
           >
             <h3 className={`text-sm font-semibold mb-3 ${highContrastMode ? 'text-yellow-200' : 'text-gray-700'}`}>
               Communication
@@ -167,7 +179,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className={`p-4 rounded-2xl ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'}`}
+            className={`p-4 rounded-2xl ${
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
+            }`}
           >
             <h3 className={`text-sm font-semibold mb-3 ${highContrastMode ? 'text-yellow-200' : 'text-gray-700'}`}>
               About Me
@@ -228,7 +246,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className={`p-4 rounded-2xl ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'}`}
+            className={`p-4 rounded-2xl ${
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
+            }`}
           >
             <h3 className={`text-sm font-semibold mb-3 ${highContrastMode ? 'text-yellow-200' : 'text-gray-700'}`}>
               Would you rather
@@ -296,7 +320,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className={`p-4 rounded-2xl ${highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'}`}
+            className={`p-4 rounded-2xl ${
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
+            }`}
           >
             <div className="flex items-center gap-2 mb-3">
               <MapPin size={14} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
@@ -473,7 +503,11 @@ export default function ProfilePage() {
             <button
               onClick={toggleHighContrast}
               className={`w-full p-4 rounded-2xl flex items-center justify-between ${
-                highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+                highContrastMode
+                  ? 'bg-gray-900 border border-yellow-400/30'
+                  : isWarmGradient
+                    ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                    : 'bg-white shadow-sm'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -490,7 +524,11 @@ export default function ProfilePage() {
             <button
               onClick={() => router.push('/safety')}
               className={`w-full p-4 rounded-2xl flex items-center justify-between ${
-                highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+                highContrastMode
+                  ? 'bg-gray-900 border border-yellow-400/30'
+                  : isWarmGradient
+                    ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                    : 'bg-white shadow-sm'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -505,7 +543,11 @@ export default function ProfilePage() {
             <button
               onClick={handleSignOut}
               className={`w-full p-4 rounded-2xl flex items-center gap-3 ${
-                highContrastMode ? 'bg-gray-900 border border-red-400/30' : 'bg-white shadow-sm'
+                highContrastMode
+                  ? 'bg-gray-900 border border-red-400/30'
+                  : isWarmGradient
+                    ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                    : 'bg-white shadow-sm'
               }`}
             >
               <LogOut size={18} className="text-red-500" />

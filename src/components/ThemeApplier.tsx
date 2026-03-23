@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import useStore from '@/store/useStore';
 import type { ThemePreference } from '@/types';
 
-const DEFAULT_PRIMARY = '#8B5CF6';
+/** Sky primary (matches light blue brand) */
+const DEFAULT_PRIMARY = '#0284c7';
 
 function clamp01(n: number) {
   return Math.min(1, Math.max(0, n));
@@ -130,7 +131,10 @@ function applyThemeVars(theme: ThemePreference, primaryColor: string) {
       ? { background: '#0B0B0F', foreground: '#F9FAFB' }
       : theme === 'grey'
         ? { background: '#D1D5DB', foreground: '#111827' }
-        : { background: '#FFFFFF', foreground: '#171717' };
+        : {
+            background: '#fafafa',
+            foreground: '#1e293b',
+          };
 
   el.style.setProperty('--background', themeVars.background);
   el.style.setProperty('--foreground', themeVars.foreground);

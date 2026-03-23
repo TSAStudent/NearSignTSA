@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Sparkles, Users } from 'lucide-react';
 import type { DiscoverProfile } from '@/types';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface MatchModalProps {
   profile: DiscoverProfile | null;
@@ -17,7 +18,7 @@ function Confetti() {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; delay: number; color: string; size: number }>>([]);
 
   useEffect(() => {
-    const colors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+    const colors = ['#FD5068', '#FF655B', '#FF8E53', '#FF6B6B', '#FFA07A', '#F472B6'];
     const newParticles = Array.from({ length: 30 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -55,6 +56,7 @@ function Confetti() {
 
 export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: MatchModalProps) {
   const highContrastMode = useStore((s) => s.highContrastMode);
+  const { isWarmGradient } = useAppTheme();
 
   if (!profile) return null;
 
@@ -81,7 +83,11 @@ export default function MatchModal({ profile, onClose, onSayHi, onIcebreaker }: 
           transition={{ type: 'spring', damping: 15 }}
           onClick={(e) => e.stopPropagation()}
           className={`relative mx-6 p-8 rounded-3xl shadow-2xl text-center max-w-xs w-full ${
-            highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
+            highContrastMode
+              ? 'bg-gray-900 border-2 border-yellow-400'
+              : isWarmGradient
+                ? 'bg-white border border-slate-200 shadow-xl'
+                : 'bg-[color:var(--background)]'
           }`}
         >
           <motion.div

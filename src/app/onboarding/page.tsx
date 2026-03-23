@@ -290,7 +290,7 @@ export default function OnboardingPage() {
       themePreference: currentUser?.themePreference ?? 'white',
       languagePreference,
       fontScale,
-      primaryColor: currentUser?.primaryColor ?? '#8B5CF6',
+      primaryColor: currentUser?.primaryColor ?? '#059669',
       chatPreferences: {
         pace: chatPace,
         captionsPreferred,
@@ -325,7 +325,7 @@ export default function OnboardingPage() {
                 value={preferredName}
                 onChange={(e) => setPreferredName(e.target.value)}
                 placeholder="e.g., Alex, Maya, Jordan"
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50"
               />
             </div>
             <div>
@@ -333,7 +333,7 @@ export default function OnboardingPage() {
               <select
                 value={ageRange}
                 onChange={(e) => setAgeRange(e.target.value)}
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50"
               >
                 <option value="13-15">13–15</option>
                 <option value="16-18">16–18</option>
@@ -360,14 +360,14 @@ export default function OnboardingPage() {
                 key={option.value}
                 onClick={() => setIdentity(option.value)}
                 className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 transition-all ${identity === option.value
-                  ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
-                  : 'bg-pink-100 border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                  ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-lg scale-[1.02]'
+                  : 'bg-slate-50 border-2 border-gray-100 hover:border-sky-200/80 text-gray-800'
                   }`}
               >
                 <span className="text-3xl">{option.icon}</span>
                 <div>
                   <div className="font-bold text-lg">{option.label}</div>
-                  <div className={`text-sm ${identity === option.value ? 'text-purple-100' : 'text-gray-500'}`}>
+                  <div className={`text-sm ${identity === option.value ? 'text-white/85' : 'text-gray-500'}`}>
                     {option.desc}
                   </div>
                 </div>
@@ -390,8 +390,8 @@ export default function OnboardingPage() {
                   key={pref}
                   onClick={() => toggleComm(pref)}
                   className={`p-4 rounded-2xl text-center transition-all cursor-pointer ${commPrefs.includes(pref)
-                    ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
-                    : 'bg-pink-100 border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                    ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-lg scale-[1.02]'
+                    : 'bg-slate-50 border-2 border-gray-100 hover:border-sky-200/80 text-gray-800'
                     }`}
                 >
                   <span className="text-2xl block mb-1">{COMMUNICATION_ICONS[pref]}</span>
@@ -412,8 +412,8 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => setLanguagePreference(opt.value)}
                     className={`p-2 rounded-xl text-xs font-semibold border ${languagePreference === opt.value
-                        ? 'bg-purple-500 text-white border-purple-500'
-                        : 'bg-pink-100 text-gray-700 border-gray-200'
+                        ? 'bg-brand-gradient-accent text-white border-white/30'
+                        : 'bg-slate-50 text-gray-700 border-gray-200'
                       }`}
                   >
                     {opt.label}
@@ -435,7 +435,7 @@ export default function OnboardingPage() {
                     key={pref}
                     onClick={() => toggleComfort(pref)}
                     className={`p-3 rounded-xl text-xs font-medium transition-all ${comfortPrefs.includes(pref)
-                      ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
+                      ? 'bg-sky-50 text-sky-900 border-2 border-sky-200/70'
                       : 'bg-gray-50 text-gray-600 border-2 border-transparent'
                       }`}
                   >
@@ -460,8 +460,8 @@ export default function OnboardingPage() {
                   key={interest}
                   onClick={() => toggleInterest(interest)}
                   className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${interests.includes(interest)
-                    ? 'bg-purple-500 text-white shadow-md scale-[1.02]'
-                    : 'bg-pink-100 border border-gray-200 text-gray-700 hover:border-purple-300'
+                    ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-md scale-[1.02]'
+                    : 'bg-slate-50 border border-gray-200 text-gray-700 hover:border-sky-300/80'
                     }`}
                 >
                   {interest}
@@ -486,8 +486,8 @@ export default function OnboardingPage() {
                   onClick={() => toggleAvailabilityVibe(vibe)}
                   className={`p-4 rounded-2xl text-center transition-all cursor-pointer ${
                     availabilityVibes.includes(vibe)
-                      ? 'bg-purple-500 text-white shadow-lg scale-[1.02]'
-                      : 'bg-pink-100 border-2 border-gray-100 hover:border-purple-200 text-gray-800'
+                      ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-lg scale-[1.02]'
+                      : 'bg-slate-50 border-2 border-gray-100 hover:border-sky-200/80 text-gray-800'
                   }`}
                 >
                   <span className="text-sm font-semibold">{AVAILABILITY_LABELS[vibe]}</span>
@@ -501,7 +501,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">
-              <MapPin className="mx-auto mb-3 text-purple-500" size={32} />
+              <MapPin className="mx-auto mb-3 text-sky-700" size={32} />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Your location</h2>
               <p className="text-gray-500 text-sm">Your address stays hidden — others only see distance</p>
             </div>
@@ -514,21 +514,21 @@ export default function OnboardingPage() {
                 onChange={(e) => handleAddressChange(e.target.value)}
                 onFocus={() => address && setShowSuggestions(true)}
                 placeholder="Start typing an address (e.g., 1600 Amphitheatre Pkwy, Mountain View, CA)"
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50"
                 autoComplete="off"
               />
               {isLoadingSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-pink-100 border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-4 text-center">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-50 border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-4 text-center">
                   <p className="text-sm text-gray-500">Loading suggestions...</p>
                 </div>
               )}
               {showSuggestions && addressSuggestions.length > 0 && !isLoadingSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-pink-100 border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-50 border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
                   {addressSuggestions.map((suggestion, idx) => (
                     <button
                       key={idx}
                       onClick={() => selectAddress(suggestion)}
-                      className="w-full text-left px-4 py-3 hover:bg-purple-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-slate-100 border-b border-gray-100 last:border-b-0 transition-colors"
                     >
                       <div className="text-sm font-medium text-gray-800">{suggestion.display_name}</div>
                     </button>
@@ -547,21 +547,21 @@ export default function OnboardingPage() {
                 }}
                 onFocus={() => school && setShowSchoolSuggestions(true)}
                 placeholder="e.g., Lincoln High School"
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50"
                 autoComplete="off"
               />
               {isLoadingSchoolSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-pink-100 border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-3 text-center">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-50 border-2 border-gray-100 rounded-2xl shadow-lg z-50 p-3 text-center">
                   <p className="text-sm text-gray-500">Loading school suggestions...</p>
                 </div>
               )}
               {showSchoolSuggestions && schoolSuggestions.length > 0 && !isLoadingSchoolSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-pink-100 border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-50 border-2 border-gray-100 rounded-2xl shadow-lg z-50 max-h-60 overflow-y-auto">
                   {schoolSuggestions.map((suggestion, idx) => (
                     <button
                       key={idx}
                       onClick={() => selectSchool(suggestion)}
-                      className="w-full text-left px-4 py-3 hover:bg-purple-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-slate-100 border-b border-gray-100 last:border-b-0 transition-colors"
                     >
                       <div className="text-sm font-medium text-gray-800">{suggestion.display_name}</div>
                     </button>
@@ -582,7 +582,7 @@ export default function OnboardingPage() {
                 max="50"
                 value={radius}
                 onChange={(e) => setRadius(Number(e.target.value))}
-                className="w-full accent-purple-500"
+                className="w-full accent-sky-500"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>5 mi</span>
@@ -606,7 +606,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setPerfectHangout(e.target.value)}
                 placeholder="e.g., a quiet coffee shop with good pastries"
                 rows={2}
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100 resize-none"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50 resize-none"
               />
             </div>
             <div>
@@ -616,7 +616,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setCommunicationStyle(e.target.value)}
                 placeholder="e.g., fluent ASL, love visual conversations"
                 rows={2}
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100 resize-none"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50 resize-none"
               />
             </div>
             <div>
@@ -626,7 +626,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setLookingForFriend(e.target.value)}
                 placeholder="e.g., explore art galleries and go on walks with"
                 rows={2}
-                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none text-gray-800 bg-pink-100 resize-none"
+                className="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-sky-400/70 focus:outline-none text-gray-800 bg-slate-50 resize-none"
               />
             </div>
           </div>
@@ -641,7 +641,7 @@ export default function OnboardingPage() {
             </div>
             <div className="space-y-4">
               {WOULD_YOU_RATHER_QUESTIONS.map((q) => (
-                <div key={q.id} className="p-4 rounded-2xl bg-pink-100 border-2 border-gray-100">
+                <div key={q.id} className="p-4 rounded-2xl bg-slate-50 border-2 border-gray-100">
                   <p className="text-sm font-semibold text-gray-800 mb-3">{q.question}</p>
                   <div className="flex gap-2">
                     <button
@@ -655,8 +655,8 @@ export default function OnboardingPage() {
                         return { ...prev, [q.id]: 'a' };
                       })}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'a'
-                        ? 'bg-purple-500 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
+                        ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:border-sky-200/80 border-2 border-transparent'
                         }`}
                     >
                       {q.optionA}
@@ -672,8 +672,8 @@ export default function OnboardingPage() {
                         return { ...prev, [q.id]: 'b' };
                       })}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${wouldYouRather[q.id] === 'b'
-                        ? 'bg-purple-500 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:border-purple-200 border-2 border-transparent'
+                        ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:border-sky-200/80 border-2 border-transparent'
                         }`}
                     >
                       {q.optionB}
@@ -689,7 +689,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-5">
             <div className="text-center mb-6">
-              <Shield className="mx-auto mb-3 text-purple-500" size={32} />
+              <Shield className="mx-auto mb-3 text-sky-700" size={32} />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Safety & boundaries</h2>
               <p className="text-gray-500 text-sm">You can change these anytime in settings</p>
               <button
@@ -699,7 +699,7 @@ export default function OnboardingPage() {
                   setAllowGroupInvites(true);
                   setShowASLLearners(true);
                 }}
-                className="mt-3 px-4 py-2 rounded-xl bg-purple-100 text-purple-700 text-xs font-semibold"
+                className="mt-3 px-4 py-2 rounded-xl bg-sky-50 text-sky-800 text-xs font-semibold"
               >
                 Select all
               </button>
@@ -724,14 +724,14 @@ export default function OnboardingPage() {
                 onChange: setShowASLLearners,
               },
             ].map((setting) => (
-              <div key={setting.label} className="flex items-center justify-between bg-pink-100 p-4 rounded-2xl border border-gray-100">
+              <div key={setting.label} className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-gray-100">
                 <div>
                   <div className="font-semibold text-gray-800 text-sm">{setting.label}</div>
                   <div className="text-xs text-gray-500">{setting.desc}</div>
                 </div>
                 <button
                   onClick={() => setting.onChange(!setting.value)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${setting.value ? 'bg-purple-500' : 'bg-gray-300'
+                  className={`w-12 h-6 rounded-full transition-all relative ${setting.value ? 'bg-sky-600' : 'bg-gray-300'
                     }`}
                 >
                   <div
@@ -741,7 +741,7 @@ export default function OnboardingPage() {
                 </button>
               </div>
             ))}
-            <div className="bg-pink-100 p-4 rounded-2xl border border-gray-100 space-y-3">
+            <div className="bg-slate-50 p-4 rounded-2xl border border-gray-100 space-y-3">
               <h4 className="text-sm font-semibold text-gray-800">Chat comfort defaults</h4>
               <div>
                 <label className="text-xs font-medium text-gray-600 block mb-1">Conversation pace</label>
@@ -751,7 +751,7 @@ export default function OnboardingPage() {
                       key={pace}
                       type="button"
                       onClick={() => setChatPace(pace)}
-                      className={`py-2 rounded-xl text-xs font-semibold ${chatPace === pace ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700'
+                      className={`py-2 rounded-xl text-xs font-semibold ${chatPace === pace ? 'bg-brand-gradient-accent text-white' : 'bg-gray-100 text-gray-700'
                         }`}
                     >
                       {pace}
@@ -767,7 +767,7 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={() => setCaptionsPreferred((v) => !v)}
-                  className={`w-12 h-6 rounded-full transition-all relative ${captionsPreferred ? 'bg-purple-500' : 'bg-gray-300'}`}
+                  className={`w-12 h-6 rounded-full transition-all relative ${captionsPreferred ? 'bg-sky-600' : 'bg-gray-300'}`}
                 >
                   <div
                     className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${captionsPreferred ? 'translate-x-6' : 'translate-x-0.5'}`}
@@ -782,7 +782,7 @@ export default function OnboardingPage() {
                       key={scale}
                       type="button"
                       onClick={() => setFontScale(scale)}
-                      className={`py-2 rounded-xl text-xs font-semibold ${fontScale === scale ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700'
+                      className={`py-2 rounded-xl text-xs font-semibold ${fontScale === scale ? 'bg-brand-gradient-accent text-white' : 'bg-gray-100 text-gray-700'
                         }`}
                     >
                       {scale === 'normal' ? 'Standard' : 'Large'}
@@ -799,11 +799,11 @@ export default function OnboardingPage() {
 
   return (
     <MobileFrame>
-      <div className="flex flex-col min-h-full bg-gradient-to-br from-purple-300 to-orange-300">
+      <div className="flex flex-col min-h-full bg-transparent">
         {/* Header */}
         <div className="px-6 pt-4 pb-2">
           <div className="flex items-center justify-between mb-4">
-            <Sparkles className="text-purple-500" size={24} />
+            <Sparkles className="text-sky-700" size={24} />
             <span className="text-sm font-semibold text-gray-500">
               Step {step + 1} of {STEPS.length}
             </span>
@@ -813,7 +813,7 @@ export default function OnboardingPage() {
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-purple-500' : 'bg-gray-200'
+                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-gradient-to-r from-sky-200/90 to-blue-300/90' : 'bg-gray-200'
                   }`}
               />
             ))}
@@ -836,7 +836,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Navigation buttons */}
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-6 py-4 pb-8 bg-pink-100/95 backdrop-blur-sm" style={{ borderBottomLeftRadius: '2.5rem', borderBottomRightRadius: '2.5rem' }}>
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-6 py-4 pb-8 bg-[color:var(--surface-glass)] backdrop-blur-xl border-t border-sky-200/40 shadow-[0_-1px_0_0_rgba(3,105,161,0.10)]" style={{ borderBottomLeftRadius: '2.5rem', borderBottomRightRadius: '2.5rem' }}>
           <div className="flex gap-3">
             {step > 0 && (
               <button
@@ -851,7 +851,7 @@ export default function OnboardingPage() {
               onClick={step === STEPS.length - 1 ? handleComplete : () => setStep(step + 1)}
               disabled={!canProceed()}
               className={`flex-1 py-3.5 px-4 rounded-2xl font-semibold flex items-center justify-center gap-1 transition-all ${canProceed()
-                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg hover:shadow-xl'
+                ? 'bg-brand-gradient-accent text-white border border-white/25 shadow-md hover:brightness-[1.08] hover:shadow-lg transition-all'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
             >

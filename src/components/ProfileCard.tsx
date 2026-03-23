@@ -14,6 +14,7 @@ import {
   WOULD_YOU_RATHER_QUESTIONS,
 } from '@/types';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface ProfileCardProps {
   profile: DiscoverProfile;
@@ -25,7 +26,13 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, onConnect, onPass, onSave, isSaved }: ProfileCardProps) {
   const highContrastMode = useStore((s) => s.highContrastMode);
+  const { isWarmGradient } = useAppTheme();
   const currentUser = useStore((s) => s.currentUser);
+  const cardSurface = highContrastMode
+    ? 'bg-gray-900 border-2 border-yellow-400'
+    : isWarmGradient
+      ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+      : 'bg-[color:var(--background)]';
   const avatarPrimaryGradient = 'from-[color:var(--color-primary-light)] to-[color:var(--color-primary)]';
   const initials = profile.name
     .split(' ')
@@ -101,9 +108,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.3 }}
-        className={`rounded-3xl overflow-hidden shadow-lg mx-4 ${
-          highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
-        }`}
+        className={`rounded-3xl overflow-hidden shadow-lg mx-4 ${cardSurface}`}
       >
         {/* Avatar area */}
         <div
@@ -118,7 +123,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
               className={`p-1.5 rounded-full border ${
                 highContrastMode
                   ? 'bg-black/60 border-yellow-500/70 text-yellow-300 hover:bg-black'
-                  : 'bg-white/90 border-[color:var(--color-primary)] text-[color:var(--color-primary)] hover:bg-white'
+                  : 'bg-white border border-slate-200 text-[color:var(--color-primary)] hover:bg-slate-50'
               }`}
               aria-label="See why this is your match"
             >
@@ -126,7 +131,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
             </button>
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                highContrastMode ? 'bg-black text-yellow-400' : 'bg-white/90 text-gray-700'
+                highContrastMode ? 'bg-black text-yellow-400' : 'bg-white border border-slate-200 text-gray-700'
               }`}
             >
               {Math.round(profile.matchScore)}% Match
@@ -135,7 +140,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
           <button
             onClick={onSave}
             className={`absolute top-3 left-3 p-2 rounded-full ${
-              isSaved ? 'bg-[color:var(--color-primary)] text-white' : 'bg-white/90 text-gray-600'
+              isSaved ? 'bg-[color:var(--color-primary)] text-white' : 'bg-white border border-slate-200 text-gray-600'
             }`}
             aria-label={isSaved ? 'Unsave profile' : 'Save profile'}
           >
@@ -271,9 +276,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
         {showDetails && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div
-              className={`relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl p-5 ${
-                highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
-              }`}
+              className={`relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl p-5 ${cardSurface}`}
             >
               <button
                 onClick={() => setShowDetails(false)}
@@ -471,9 +474,7 @@ export default function ProfileCard({ profile, onConnect, onPass, onSave, isSave
       {showInsightModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div
-            className={`relative mx-4 max-w-md w-full rounded-3xl p-6 ${
-              highContrastMode ? 'bg-gray-900 border-2 border-yellow-400' : 'bg-[color:var(--background)]'
-            }`}
+            className={`relative mx-4 max-w-md w-full rounded-3xl p-6 ${cardSurface}`}
           >
             <button
               onClick={() => setShowInsightModal(false)}

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Send, Pin, Users, Settings } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_PROFILES } from '@/lib/seedData';
 
 export default function GroupChatPage() {
@@ -16,6 +17,7 @@ export default function GroupChatPage() {
     currentUser, groups, groupMessages, sendGroupMessage,
     loadFromStorage, highContrastMode
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
   const [message, setMessage] = useState('');
   const [showInfo, setShowInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,11 +63,25 @@ export default function GroupChatPage() {
 
   return (
     <MobileFrame>
-      <div className={`flex flex-col h-full ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`flex flex-col h-full ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-4 pt-4 pb-3 ${
-          highContrastMode ? 'bg-gray-900 border-b border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
-        }`}>
+        <div
+          className={`px-4 pt-4 pb-3 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900 border-b border-yellow-400/30'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center gap-3">
             <button onClick={() => router.push('/groups')} className="p-1">
               <ArrowLeft size={22} className={highContrastMode ? 'text-yellow-400' : 'text-gray-700'} />
@@ -170,7 +186,9 @@ export default function GroupChatPage() {
                         : 'bg-purple-500 text-white'
                       : highContrastMode
                       ? 'bg-gray-800 text-yellow-100'
-                      : 'bg-white text-gray-800 shadow-sm'
+                      : isWarmGradient
+                        ? 'bg-white text-slate-800 border border-slate-200 shadow-sm'
+                        : 'bg-white text-gray-800 shadow-sm'
                   }`}>
                     <p className="text-sm">{msg.content}</p>
                     <span className={`text-[10px] mt-1 block ${
@@ -189,9 +207,15 @@ export default function GroupChatPage() {
         </div>
 
         {/* Input */}
-        <div className={`px-4 py-3 pb-8 border-t ${
-          highContrastMode ? 'bg-gray-900 border-yellow-400/30' : 'bg-white border-gray-100'
-        }`}>
+        <div
+          className={`px-4 py-3 pb-8 border-t ${
+            highContrastMode
+              ? 'bg-gray-900 border-yellow-400/30'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-glass)] backdrop-blur-xl border-t border-sky-200/40'
+                : 'bg-white border-gray-100'
+          }`}
+        >
           <div className="flex items-center gap-2">
             <input
               type="text"

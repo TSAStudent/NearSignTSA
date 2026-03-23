@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { CommunicationPreference } from '@/types';
 import { COMMUNICATION_LABELS, INTEREST_OPTIONS } from '@/types';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 interface FilterState {
   distanceMax: number;
@@ -25,6 +26,7 @@ interface FilterSheetProps {
 export default function FilterSheet({ isOpen, onClose, filters, onApply }: FilterSheetProps) {
   const [localFilters, setLocalFilters] = useState<FilterState>(filters);
   const highContrastMode = useStore((s) => s.highContrastMode);
+  const { isWarmGradient } = useAppTheme();
 
   const toggleComm = (pref: CommunicationPreference) => {
     setLocalFilters((f) => ({
@@ -61,7 +63,11 @@ export default function FilterSheet({ isOpen, onClose, filters, onApply }: Filte
             transition={{ type: 'spring', damping: 25 }}
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-sm rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto ${
-              highContrastMode ? 'bg-gray-900 border-t-2 border-yellow-400' : 'bg-[color:var(--background)]'
+              highContrastMode
+                ? 'bg-gray-900 border-t-2 border-yellow-400'
+                : isWarmGradient
+                  ? 'bg-white border-t border-slate-200 shadow-[0_-8px_30px_-12px_rgba(15,23,42,0.08)]'
+                  : 'bg-[color:var(--background)]'
             }`}
           >
             <div className="flex items-center justify-between mb-6">

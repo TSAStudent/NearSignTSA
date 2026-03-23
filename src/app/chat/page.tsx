@@ -7,11 +7,13 @@ import { MessageCircle, Sparkles, Bot } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_PROFILES } from '@/lib/seedData';
 
 export default function ChatListPage() {
   const router = useRouter();
   const { currentUser, chats, chatMessages, loadFromStorage, highContrastMode, createChat } = useStore();
+  const { isWarmGradient } = useAppTheme();
 
   useEffect(() => {
     loadFromStorage();
@@ -47,9 +49,25 @@ export default function ChatListPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`min-h-full pb-24 ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
+        <div
+          className={`px-6 pt-4 pb-4 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center gap-2">
             <MessageCircle size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
             <h1 className={`text-xl font-bold ${highContrastMode ? 'text-yellow-100' : 'text-gray-900'}`}>
@@ -65,7 +83,9 @@ export default function ChatListPage() {
             className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${
               highContrastMode
                 ? 'bg-gray-900 border border-yellow-400/30 hover:bg-gray-800'
-                : 'bg-white shadow-sm hover:shadow-md'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm hover:shadow-md'
+                  : 'bg-white shadow-sm hover:shadow-md'
             }`}
           >
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shrink-0">
@@ -115,7 +135,9 @@ export default function ChatListPage() {
                   className={`w-full p-4 rounded-2xl flex items-center gap-4 text-left transition-all ${
                     highContrastMode
                       ? 'bg-gray-900 border border-yellow-400/30 hover:bg-gray-800'
-                      : 'bg-white shadow-sm hover:shadow-md'
+                      : isWarmGradient
+                        ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm hover:shadow-md'
+                        : 'bg-white shadow-sm hover:shadow-md'
                   }`}
                 >
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shrink-0">

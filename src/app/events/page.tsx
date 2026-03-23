@@ -10,6 +10,7 @@ import {
 import MobileFrame from '@/components/MobileFrame';
 import BottomNav from '@/components/BottomNav';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_EVENTS } from '@/lib/seedData';
 
 const EVENT_TAGS = [
@@ -23,6 +24,7 @@ export default function EventsPage() {
     currentUser, events, rsvpEvent, unrsvpEvent, createEvent,
     loadFromStorage, highContrastMode
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
   const [listFilter, setListFilter] = useState<'all' | 'mine'>('all');
   const [showCreate, setShowCreate] = useState(false);
   const [newEvent, setNewEvent] = useState({
@@ -88,9 +90,25 @@ export default function EventsPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-24 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`min-h-full pb-24 ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
+        <div
+          className={`px-6 pt-4 pb-4 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar size={20} className={highContrastMode ? 'text-yellow-400' : 'text-[color:var(--color-primary)]'} />
@@ -170,7 +188,11 @@ export default function EventsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`rounded-2xl overflow-hidden ${
-                    highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
+                    highContrastMode
+                      ? 'bg-gray-900 border border-yellow-400/30'
+                      : isWarmGradient
+                        ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                        : 'bg-[color:var(--background)] shadow-sm'
                   }`}
                 >
                   {/* Colored top bar */}
@@ -297,7 +319,11 @@ export default function EventsPage() {
                 transition={{ type: 'spring', damping: 25 }}
                 onClick={(e) => e.stopPropagation()}
                 className={`w-full max-w-sm rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto ${
-                  highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'
+                  highContrastMode
+                    ? 'bg-gray-900'
+                    : isWarmGradient
+                      ? 'bg-white border-t border-slate-200 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.08)]'
+                      : 'bg-[color:var(--background)]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-6">

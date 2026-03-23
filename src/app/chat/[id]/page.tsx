@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_PROFILES } from '@/lib/seedData';
 import type { ChatAttachment } from '@/types';
 import { ICEBREAKERS } from '@/types';
@@ -21,6 +22,7 @@ export default function ChatPage() {
     currentUser, chats, chatMessages, sendMessage, sendMessageAs, updateMessageAttachment,
     submitReport, loadFromStorage, highContrastMode
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
   const [message, setMessage] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [showIcebreakers, setShowIcebreakers] = useState(false);
@@ -233,10 +235,25 @@ export default function ChatPage() {
 
   return (
     <MobileFrame>
-      <div className={`flex flex-col h-full ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`flex flex-col h-full ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-4 pt-4 pb-3 flex items-center gap-3 ${highContrastMode ? 'bg-gray-900 border-b border-yellow-400/30' : 'bg-[color:var(--background)] shadow-sm'
-          }`}>
+        <div
+          className={`px-4 pt-4 pb-3 flex items-center gap-3 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900 border-b border-yellow-400/30'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <button onClick={() => router.push('/chat')} className="p-1">
             <ArrowLeft size={22} className={highContrastMode ? 'text-yellow-400' : 'text-gray-700'} />
           </button>
@@ -316,8 +333,8 @@ export default function ChatPage() {
                       : 'bg-purple-50 border border-purple-100 text-purple-800'
                     : msg.type === 'hangout_request'
                       ? highContrastMode
-                        ? 'bg-green-400/20 border border-green-400/50 text-green-100'
-                        : 'bg-green-50 border border-green-100 text-green-800'
+                        ? 'bg-sky-400/20 border border-sky-400/50 text-sky-100'
+                        : 'bg-sky-50 border border-sky-100 text-sky-800'
                       : isMe
                         ? highContrastMode
                           ? 'bg-yellow-400 text-black'
@@ -447,8 +464,15 @@ export default function ChatPage() {
 
         {/* Icebreaker panel */}
         {showIcebreakers && (
-          <div className={`px-4 py-3 border-t ${highContrastMode ? 'bg-gray-900 border-yellow-400/30' : 'bg-white border-gray-100'
-            }`}>
+          <div
+            className={`px-4 py-3 border-t ${
+              highContrastMode
+                ? 'bg-gray-900 border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] backdrop-blur-xl border-t border-sky-200/40'
+                  : 'bg-white border-gray-100'
+            }`}
+          >
             <div className="flex items-center justify-between mb-2">
               <span className={`text-xs font-semibold ${highContrastMode ? 'text-yellow-200' : 'text-gray-700'}`}>
                 Pick an icebreaker
@@ -475,8 +499,15 @@ export default function ChatPage() {
         )}
 
         {/* Input */}
-        <div className={`px-4 py-3 pb-8 border-t ${highContrastMode ? 'bg-gray-900 border-yellow-400/30' : 'bg-white border-gray-100'
-          }`}>
+        <div
+          className={`px-4 py-3 pb-8 border-t ${
+            highContrastMode
+              ? 'bg-gray-900 border-yellow-400/30'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-glass)] backdrop-blur-xl border-t border-sky-200/40'
+                : 'bg-white border-gray-100'
+          }`}
+        >
           {draftAttachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {draftAttachments.map((att) => (
@@ -506,7 +537,7 @@ export default function ChatPage() {
             </button>
             <button
               onClick={handleHangout}
-              className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-green-50 text-green-500'
+              className={`p-2 rounded-xl ${highContrastMode ? 'bg-gray-800 text-yellow-400' : 'bg-sky-50 text-sky-600'
                 }`}
               title="Suggest hangout"
             >

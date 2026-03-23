@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import MobileFrame from '@/components/MobileFrame';
 import useStore from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { SEED_PROFILES } from '@/lib/seedData';
 
 export default function SafetyPage() {
@@ -17,6 +18,7 @@ export default function SafetyPage() {
     currentUser, blockedUsers, unblockUser, reports,
     updateCurrentUser, loadFromStorage, highContrastMode
   } = useStore();
+  const { isWarmGradient } = useAppTheme();
 
   useEffect(() => {
     loadFromStorage();
@@ -35,9 +37,25 @@ export default function SafetyPage() {
 
   return (
     <MobileFrame>
-      <div className={`min-h-full pb-8 ${highContrastMode ? 'bg-black' : 'bg-[color:var(--background)] text-[color:var(--foreground)]'}`}>
+      <div
+        className={`min-h-full pb-8 ${
+          highContrastMode
+            ? 'bg-black text-yellow-100'
+            : isWarmGradient
+              ? 'bg-transparent text-[color:var(--foreground)]'
+              : 'bg-[color:var(--background)] text-[color:var(--foreground)]'
+        }`}
+      >
         {/* Header */}
-        <div className={`px-6 pt-4 pb-4 ${highContrastMode ? 'bg-gray-900' : 'bg-[color:var(--background)]'} shadow-sm`}>
+        <div
+          className={`px-6 pt-4 pb-4 shadow-sm ${
+            highContrastMode
+              ? 'bg-gray-900'
+              : isWarmGradient
+                ? 'bg-[color:var(--surface-header)] backdrop-blur-xl border-b border-sky-200/45 shadow-sm'
+                : 'bg-[color:var(--background)]'
+          }`}
+        >
           <div className="flex items-center gap-3">
             <button onClick={() => router.push('/profile')} className="p-1">
               <ArrowLeft size={22} className={highContrastMode ? 'text-yellow-400' : 'text-gray-700'} />
@@ -55,7 +73,11 @@ export default function SafetyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={`p-4 rounded-2xl ${
-              highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
@@ -123,7 +145,11 @@ export default function SafetyPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className={`p-4 rounded-2xl ${
-              highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
@@ -176,7 +202,11 @@ export default function SafetyPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className={`p-4 rounded-2xl ${
-              highContrastMode ? 'bg-gray-900 border border-yellow-400/30' : 'bg-white shadow-sm'
+              highContrastMode
+                ? 'bg-gray-900 border border-yellow-400/30'
+                : isWarmGradient
+                  ? 'bg-[color:var(--surface-glass)] border border-sky-200/45 shadow-sm'
+                  : 'bg-white shadow-sm'
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
@@ -205,7 +235,7 @@ export default function SafetyPage() {
                           ? 'bg-amber-100 text-amber-700'
                           : report.status === 'reviewed'
                           ? 'bg-blue-100 text-blue-700'
-                          : 'bg-green-100 text-green-700'
+                          : 'bg-sky-100 text-sky-800'
                       }`}>
                         {report.status}
                       </span>
@@ -240,7 +270,11 @@ export default function SafetyPage() {
               <a
                 href="tel:911"
                 className={`flex items-center justify-between p-3 rounded-xl ${
-                  highContrastMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'
+                  highContrastMode
+                  ? 'bg-gray-900 hover:bg-gray-800'
+                  : isWarmGradient
+                    ? 'bg-white border border-slate-200 hover:bg-slate-50'
+                    : 'bg-white hover:bg-gray-50'
                 }`}
               >
                 <span className={`text-sm font-medium ${highContrastMode ? 'text-yellow-100' : 'text-gray-800'}`}>
@@ -253,7 +287,11 @@ export default function SafetyPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center justify-between p-3 rounded-xl ${
-                  highContrastMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'
+                  highContrastMode
+                  ? 'bg-gray-900 hover:bg-gray-800'
+                  : isWarmGradient
+                    ? 'bg-white border border-slate-200 hover:bg-slate-50'
+                    : 'bg-white hover:bg-gray-50'
                 }`}
               >
                 <span className={`text-sm font-medium ${highContrastMode ? 'text-yellow-100' : 'text-gray-800'}`}>
@@ -266,7 +304,11 @@ export default function SafetyPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center justify-between p-3 rounded-xl ${
-                  highContrastMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'
+                  highContrastMode
+                  ? 'bg-gray-900 hover:bg-gray-800'
+                  : isWarmGradient
+                    ? 'bg-white border border-slate-200 hover:bg-slate-50'
+                    : 'bg-white hover:bg-gray-50'
                 }`}
               >
                 <span className={`text-sm font-medium ${highContrastMode ? 'text-yellow-100' : 'text-gray-800'}`}>

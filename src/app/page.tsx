@@ -39,12 +39,10 @@ export default function SplashPage() {
 
   return (
     <MobileFrame>
-      <div className="flex flex-col items-center justify-center min-h-full px-8 py-12 bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 -left-10 w-40 h-40 bg-orange-400/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 -right-10 w-48 h-48 bg-pink-500/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl" />
+      <div className="flex flex-col items-center justify-center min-h-full px-8 py-12 bg-transparent relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-80">
+          <div className="absolute top-8 left-1/3 w-44 h-44 bg-white/25 rounded-full blur-3xl" />
+          <div className="absolute bottom-12 right-1/4 w-48 h-48 bg-white/20 rounded-full blur-3xl" />
         </div>
 
         {/* Logo / Brand */}
@@ -55,14 +53,14 @@ export default function SplashPage() {
           className="relative z-10 text-center mb-8"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30">
-              <HandMetal size={32} className="text-white" />
+            <div className="w-16 h-16 bg-white/70 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-sky-200/80 shadow-sm">
+              <HandMetal size={32} className="text-sky-800" />
             </div>
           </div>
-          <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2 drop-shadow-sm">
             NearSign
           </h1>
-          <p className="text-orange-100 text-base font-medium leading-relaxed max-w-xs">
+          <p className="text-slate-800/90 text-base font-medium leading-relaxed max-w-xs drop-shadow-sm">
             Meet people who communicate like you.
           </p>
         </motion.div>
@@ -75,16 +73,16 @@ export default function SplashPage() {
           className="relative z-10 flex items-center justify-center gap-4 mb-10"
         >
           <div className="flex -space-x-3">
-            {['from-pink-500 to-rose-600', 'from-pink-400 to-purple-500', 'from-orange-300 to-orange-400'].map((bg, i) => (
+            {['from-sky-200/80 to-sky-100/50', 'from-sky-300/70 to-blue-100/50', 'from-cyan-200/60 to-sky-100/50'].map((bg, i) => (
               <motion.div
                 key={i}
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.4 + i * 0.15 }}
-                className={`w-14 h-14 rounded-full bg-gradient-to-br ${bg} ring-2 ring-white/30 flex items-center justify-center`}
+                className={`w-14 h-14 rounded-full bg-gradient-to-br ${bg} ring-2 ring-white/80 flex items-center justify-center shadow-sm`}
               >
                 {i === 0 && <span className="text-lg">🤟</span>}
-                {i === 1 && <Ear size={18} className="text-white" />}
+                {i === 1 && <Ear size={18} className="text-sky-900" />}
                 {i === 2 && <span className="text-lg">💬</span>}
               </motion.div>
             ))}
@@ -100,11 +98,11 @@ export default function SplashPage() {
         >
           {!showEmailForm ? (
             <>
-              <div className="flex rounded-2xl bg-white/10 p-1 gap-1 mb-3">
+              <div className="flex rounded-2xl bg-white/50 border border-sky-200/60 p-1 gap-1 mb-3 shadow-sm">
                 <button
                   type="button"
                   onClick={() => setIsCreateAccount(true)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${isCreateAccount ? 'bg-white text-purple-700' : 'text-white/80'
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${isCreateAccount ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
                     }`}
                 >
                   Create account
@@ -112,7 +110,7 @@ export default function SplashPage() {
                 <button
                   type="button"
                   onClick={() => setIsCreateAccount(false)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isCreateAccount ? 'bg-white text-purple-700' : 'text-white/80'
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isCreateAccount ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
                     }`}
                 >
                   Sign in
@@ -133,7 +131,7 @@ export default function SplashPage() {
 
               <button
                 onClick={() => setShowEmailForm(true)}
-                className="w-full py-4 px-6 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-4 px-6 bg-white/60 backdrop-blur-sm border border-sky-200/80 rounded-2xl font-semibold text-slate-800 flex items-center justify-center gap-3 hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm"
               >
                 <Mail size={20} />
                 {isCreateAccount ? 'Create account with Email' : 'Sign in with Email'}
@@ -146,7 +144,7 @@ export default function SplashPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="w-full py-3.5 px-5 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full py-3.5 px-5 bg-white/90 backdrop-blur-sm border border-sky-200/80 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-300/60"
               />
               <input
                 type="email"
@@ -154,11 +152,11 @@ export default function SplashPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="w-full py-3.5 px-5 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full py-3.5 px-5 bg-white/90 backdrop-blur-sm border border-sky-200/80 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-300/60"
               />
               <button
                 type="submit"
-                className="w-full py-4 px-6 bg-white rounded-2xl font-semibold text-purple-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-4 px-6 bg-brand-gradient-accent rounded-2xl font-semibold text-white border border-white/25 shadow-md hover:brightness-[1.08] transition-all hover:scale-[1.01] active:scale-[0.98]"
               >
                 {isCreateAccount ? (
                   <>
@@ -175,7 +173,7 @@ export default function SplashPage() {
               <button
                 type="button"
                 onClick={() => setShowEmailForm(false)}
-                className="w-full py-2 text-purple-200 text-sm hover:text-white transition-colors"
+                className="w-full py-2 text-slate-500 text-sm hover:text-sky-800 transition-colors"
               >
                 Back to options
               </button>
@@ -188,7 +186,7 @@ export default function SplashPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="relative z-10 text-purple-300 text-xs text-center mt-8 max-w-xs leading-relaxed"
+          className="relative z-10 text-slate-500 text-xs text-center mt-8 max-w-xs leading-relaxed"
         >
           Designed with accessibility first. High-contrast mode, large tap targets, and no audio-only cues.
         </motion.p>
