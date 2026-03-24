@@ -1,8 +1,8 @@
 # Team #2014-1
 
-Click [here](./docs/TSA-Software-Development-Team-2014-1-State-Portfolio.pdf) to access App Portfolio(contains all information about the creation of it and includes worklog/table of contents).
+Go to https://docs.google.com/document/d/1sB2TIRs1Wfx4_zaEfSdgluVeeEfbAEJYFLZSeO2OmZs/edit?usp=sharing to access App Portfolio(contains all information about the creation of it and includes worklog/table of contents).
 
-Click [here](./docs/NearSignAppDesign.pdf) to access app blueprint and design our team made before starting code(made using zoom whiteboard)
+Go to https://nearsignappdesign.tiiny.site/ to access app blueprint and design our team made before starting code(made using zoom whiteboard)
 
 ## Quick Summary
 
