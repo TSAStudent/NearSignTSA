@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { transcribeMediaWithDeepgram } from '@/lib/deepgramTranscribe';
+import { transcribeMediaWithOpenAI } from '@/lib/openaiTranscribe';
 
 export const runtime = 'nodejs';
 
-/** Allow time for Deepgram on larger clips (Vercel / local) */
+/** Allow time for transcription on larger clips (Vercel / local) */
 export const maxDuration = 120;
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20MB
@@ -42,17 +42,17 @@ export async function POST(request: Request) {
     await writeFile(outputPath, buffer);
 
     const { transcript, skipped, error: transcribeError } =
-      await transcribeMediaWithDeepgram(buffer, file.type || 'video/mp4');
+      await transcribeMediaWithOpenAI(buffer, file.type || 'video/mp4', file.name);
 
     return NextResponse.json({
       url: `/uploads/${uniqueName}`,
       originalName: file.name,
       size: file.size,
-      /** Auto-generated captions from speech in the video (Deepgram) */
+      /** Auto-generated captions from speech in the video */
       transcript: transcript ?? undefined,
       captionsFromTranscript: Boolean(transcript),
-      deepgramSkipped: skipped,
-      transcribeError: transcribeError ?? undefined,
+      transcriptionSkipped: skipped,
+      transcriptionError: transcribeError ?? undefined,
     });
   } catch (error) {
     console.error('Video upload failed', error);

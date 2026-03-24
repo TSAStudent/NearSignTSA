@@ -34,6 +34,7 @@ export default function ChatPage() {
   const [draftAttachments, setDraftAttachments] = useState<ChatAttachment[]>([]);
   const [signyLoading, setSignyLoading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [generatingCaptions, setGeneratingCaptions] = useState<Record<string, boolean>>({});
   const [captionEditor, setCaptionEditor] = useState<{
     messageId: string;
     attachmentId: string;
@@ -218,6 +219,63 @@ export default function ChatPage() {
     setDraftAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
+  const setCaptionJob = (key: string, active: boolean) => {
+    setGeneratingCaptions((prev) => {
+      if (active) return { ...prev, [key]: true };
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const generateCaptionsForAttachment = async (
+    messageId: string,
+    attachment: ChatAttachment
+  ) => {
+    if (attachment.kind !== 'video') return;
+    const key = `${messageId}:${attachment.id}`;
+    if (generatingCaptions[key]) return;
+
+    setCaptionJob(key, true);
+    try {
+      const res = await fetch('/api/transcribe-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: attachment.url }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not generate captions.');
+      }
+
+      const transcript =
+        typeof data?.transcript === 'string' && data.transcript.trim()
+          ? data.transcript.trim()
+          : '';
+
+      if (!transcript) {
+        const extra =
+          typeof data?.transcriptionError === 'string' && data.transcriptionError.trim()
+            ? ` (${data.transcriptionError})`
+            : typeof data?.transcribeError === 'string' && data.transcribeError.trim()
+              ? ` (${data.transcribeError})`
+            : '';
+        window.alert(
+          `Could not auto-generate captions for this clip${extra}. Try another clip, then use the Captions button to edit text manually if needed.`
+        );
+        return;
+      }
+
+      updateMessageAttachment(chatId, messageId, attachment.id, {
+        captions: transcript,
+      });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not generate captions.');
+    } finally {
+      setCaptionJob(key, false);
+    }
+  };
+
   const handleReport = () => {
     if (!otherId || !reportReason) return;
 
@@ -232,6 +290,48 @@ export default function ChatPage() {
 
     setTimeout(() => setShowReportThanks(false), 2600);
   };
+
+  /**
+   * Browsers only show built-in CC controls when a <track> exists.
+   * We generate a lightweight WebVTT track from transcript text so users
+   * can toggle captions directly in the video player.
+   */
+  const makeCaptionTrackUrl = (captionText?: string) => {
+    const text = captionText?.trim();
+    if (!text) return undefined;
+
+    const words = text.replace(/\s+/g, ' ').trim().split(' ');
+    const chunkSize = 8;
+    const chunks: string[] = [];
+    for (let i = 0; i < words.length; i += chunkSize) {
+      chunks.push(words.slice(i, i + chunkSize).join(' '));
+    }
+
+    const toTime = (seconds: number) => {
+      const totalMs = Math.max(0, Math.floor(seconds * 1000));
+      const ms = totalMs % 1000;
+      const totalSec = Math.floor(totalMs / 1000);
+      const sec = totalSec % 60;
+      const totalMin = Math.floor(totalSec / 60);
+      const min = totalMin % 60;
+      const hr = Math.floor(totalMin / 60);
+      const pad = (n: number, len = 2) => n.toString().padStart(len, '0');
+      return `${pad(hr)}:${pad(min)}:${pad(sec)}.${pad(ms, 3)}`;
+    };
+
+    // Approximate pacing so lines advance while the person speaks.
+    const secondsPerChunk = 2.8;
+    let vtt = 'WEBVTT\n\n';
+    chunks.forEach((chunk, index) => {
+      const start = index * secondsPerChunk;
+      const end = start + secondsPerChunk;
+      vtt += `${toTime(start)} --> ${toTime(end)}\n${chunk}\n\n`;
+    });
+
+    return `data:text/vtt;charset=utf-8,${encodeURIComponent(vtt)}`;
+  };
+
+  const fullscreenTrackUrl = makeCaptionTrackUrl(fullscreenVideo?.captions);
 
   return (
     <MobileFrame>
@@ -365,7 +465,11 @@ export default function ChatPage() {
                   <p className="text-sm">{msg.content}</p>
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="mt-2 space-y-2">
-                      {msg.attachments.map((att) => (
+                      {msg.attachments.map((att) => {
+                        const captionTrackUrl = makeCaptionTrackUrl(att.captions);
+                        const captionJobKey = `${msg.id}:${att.id}`;
+                        const isGeneratingCaption = Boolean(generatingCaptions[captionJobKey]);
+                        return (
                         <div key={att.id}>
                           {att.kind === 'link' ? (
                             <a
@@ -391,13 +495,32 @@ export default function ChatPage() {
                                   controls
                                   src={att.url}
                                   className="w-full max-h-56 rounded-lg bg-black"
-                                />
+                                >
+                                  {captionTrackUrl && (
+                                    <track
+                                      kind="captions"
+                                      src={captionTrackUrl}
+                                      srcLang="en"
+                                      label="Auto captions"
+                                      default
+                                    />
+                                  )}
+                                </video>
                                 {att.captions && (
                                   <div className="pointer-events-none absolute bottom-9 left-2 right-2 rounded bg-black/75 px-2 py-1 text-center text-[11px] text-white">
                                     {att.captions}
                                   </div>
                                 )}
                                 <div className="absolute right-2 top-2 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    onClick={() => generateCaptionsForAttachment(msg.id, att)}
+                                    disabled={isGeneratingCaption}
+                                    className="rounded-md bg-black/70 p-1 text-white disabled:opacity-50"
+                                    title={isGeneratingCaption ? 'Generating captions...' : 'Generate auto captions'}
+                                  >
+                                    <Sparkles size={14} />
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -446,7 +569,8 @@ export default function ChatPage() {
                             </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                   <span className={`text-[10px] mt-1 block ${isMe
@@ -820,6 +944,27 @@ export default function ChatPage() {
               <Captions size={14} />
               Captions
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                generateCaptionsForAttachment(fullscreenVideo.messageId, {
+                  id: fullscreenVideo.attachmentId,
+                  kind: 'video',
+                  url: fullscreenVideo.url,
+                  label: fullscreenVideo.label,
+                  captions: fullscreenVideo.captions,
+                })
+              }
+              disabled={Boolean(
+                generatingCaptions[`${fullscreenVideo.messageId}:${fullscreenVideo.attachmentId}`]
+              )}
+              className="absolute left-36 top-4 z-10 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              <Sparkles size={14} />
+              {generatingCaptions[`${fullscreenVideo.messageId}:${fullscreenVideo.attachmentId}`]
+                ? 'Generating...'
+                : 'Generate'}
+            </button>
             <div className="flex h-full w-full items-center justify-center p-4">
               <div className="relative w-full max-w-5xl">
                 <video
@@ -827,7 +972,17 @@ export default function ChatPage() {
                   autoPlay
                   src={fullscreenVideo.url}
                   className="max-h-[85vh] w-full rounded-xl bg-black"
-                />
+                >
+                  {fullscreenTrackUrl && (
+                    <track
+                      kind="captions"
+                      src={fullscreenTrackUrl}
+                      srcLang="en"
+                      label="Auto captions"
+                      default
+                    />
+                  )}
+                </video>
                 {fullscreenVideo.captions && (
                   <div className="pointer-events-none absolute bottom-14 left-3 right-3 rounded bg-black/80 px-3 py-2 text-center text-sm text-white">
                     {fullscreenVideo.captions}
