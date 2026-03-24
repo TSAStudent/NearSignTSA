@@ -6,6 +6,8 @@ Go to https://nearsignappdesign.tiiny.site/ to access app blueprint and design o
 
 Go to https://pdflink.to/fafe82b7/ to access Team Worklog
 
+Go to https://weathered-flower-399.linkyhost.com to access our Copyright Checklist Form
+
 ## Quick Summary
 
 NearSign is a friend-finding and communication-first social app designed for Deaf, Hard of Hearing, and hearing ally users. It helps people connect based on communication preferences, comfort settings, interests, and local availability.
