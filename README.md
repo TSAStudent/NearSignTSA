@@ -1,6 +1,6 @@
 # Team #2285-1
 
-Go to https://docs.google.com/document/d/1sB2TIRs1Wfx4_zaEfSdgluVeeEfbAEJYFLZSeO2OmZs/edit?usp=sharing to access App Portfolio(contains all information about the creation of it and includes worklog/table of contents).
+Go to https://docs.google.com/document/d/1sB2TIRs1Wfx4_zaEfSdgluVeeEfbAEJYFLZSeO2OmZs/edit?usp=sharing to access App Portfolio(contains all information about the creation of it and includes table of contents, citations, technical implementation details and much more!).
 
 Go to https://nearsignappdesign.tiiny.site/ to access app blueprint and design our team made before starting code(made using zoom whiteboard)
 
