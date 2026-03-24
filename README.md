@@ -1,14 +1,14 @@
 # Team #2014-1
 
-Click here to access App Portfolio(contains all information about the creation of it and includes worklog/table of contents).
+Click [here](./docs/TSA-Software-Development-Team-2014-1-State-Portfolio.pdf) to access App Portfolio(contains all information about the creation of it and includes worklog/table of contents).
 
-Click here to access app blueprint and design our team made before starting code.
+Click [here](./docs/NearSignAppDesign.pdf) to access app blueprint and design our team made before starting code(made using zoom whiteboard)
 
 ## Quick Summary
 
 NearSign is a friend-finding and communication-first social app designed for Deaf, Hard of Hearing, and hearing ally users. It helps people connect based on communication preferences, comfort settings, interests, and local availability.
 
-The app is built with Next.js/React and integrates Deepgram API for video/audio caption transcription, Firebase for backend services and app data support, OpenAI API for AI assistant and matchmaking features, NextAuth with Google authentication for secure sign-in, and additional modern web tooling for storage, state management, and accessibility-first UX flows.
+Core features are built using Next.js and React with TypeScript (app framework and UI architecture), Tailwind CSS (styling system), Framer Motion (animations and transitions), Zustand (state management), and NextAuth with Google provider (secure sign-in), with Firebase (project services/storage support), OpenAI API (Signy assistant, matchmaking/insight and language features), Deepgram API (voice/video caption transcription workflows), and custom Next.js API routes (backend logic and integrations). All API keys are hidden and excluded from this GitHub repo for security reasons.
 
 ## Core Features
 
